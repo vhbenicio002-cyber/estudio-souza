@@ -1,0 +1,352 @@
+/* Estúdio Souza — identidade visual exclusiva das páginas públicas.
+   Carregar somente nos templates de app/templates/public/.
+   Não altera estilos do painel administrativo nem scripts funcionais. */
+
+:root {
+  --es-cream: #F2E9DF;
+  --es-ink: #282321;
+  --es-copper: #A66D4F;
+  --es-white: #FFFFFF;
+  --es-muted: #756B65;
+  --es-line: #E5D9CE;
+  --es-soft: #FAF6F1;
+  --es-shadow: 0 14px 36px rgba(40, 35, 33, .08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  color: var(--es-ink);
+  background: var(--es-soft);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.beauty-public-nav,
+.navbar.fixed-top {
+  background: rgba(255,255,255,.96) !important;
+  border-bottom: 1px solid rgba(166,109,79,.12);
+  box-shadow: 0 5px 24px rgba(40,35,33,.055);
+  backdrop-filter: blur(12px);
+  padding-block: .8rem;
+}
+
+.beauty-public-nav .navbar-brand,
+.navbar.fixed-top .navbar-brand {
+  color: var(--es-ink) !important;
+  letter-spacing: .02em;
+}
+
+.beauty-public-nav .nav-link,
+.navbar.fixed-top .nav-link {
+  color: var(--es-ink);
+  font-weight: 600;
+  padding: .65rem .9rem;
+}
+
+.beauty-public-nav .nav-link:hover,
+.navbar.fixed-top .nav-link:hover {
+  color: var(--es-copper);
+}
+
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4.5rem, 9vw, 7.5rem) 0 !important;
+  color: var(--es-ink) !important;
+  background:
+    radial-gradient(ellipse at 85% 15%, rgba(166,109,79,.13), transparent 36%),
+    linear-gradient(135deg, #F8F3ED 0%, var(--es-cream) 58%, #EAD9CB 100%) !important;
+}
+
+.hero-section .container { max-width: 920px; }
+.hero-logo {
+  width: clamp(104px, 16vw, 150px);
+  height: clamp(104px, 16vw, 150px);
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 8px;
+  background: rgba(255,255,255,.5);
+}
+
+.hero-kicker {
+  color: var(--es-copper) !important;
+  letter-spacing: .2em;
+  font-size: .76rem;
+}
+
+.hero-section h1 {
+  max-width: 780px;
+  margin-inline: auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500 !important;
+  line-height: 1.12;
+  letter-spacing: -.025em;
+}
+
+.hero-section .lead {
+  max-width: 650px;
+  margin-inline: auto;
+  color: #62564F;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--es-ink);
+}
+
+h2, .hero-section h1 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.text-primary { color: var(--es-copper) !important; }
+.text-warning { color: var(--es-copper) !important; }
+.bg-light { background-color: var(--es-cream) !important; }
+
+.btn {
+  min-height: 44px;
+  border-radius: 999px;
+  font-weight: 650;
+  padding: .7rem 1.35rem;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.btn:hover { transform: translateY(-1px); }
+
+.btn-primary,
+.btn-warning {
+  color: var(--es-white) !important;
+  background: var(--es-copper) !important;
+  border-color: var(--es-copper) !important;
+  box-shadow: 0 7px 18px rgba(166,109,79,.18);
+}
+
+.btn-primary:hover,
+.btn-warning:hover {
+  color: var(--es-white) !important;
+  background: #89563D !important;
+  border-color: #89563D !important;
+}
+
+.btn-outline-primary,
+.btn-outline-warning {
+  color: var(--es-copper) !important;
+  border-color: var(--es-copper) !important;
+  background: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-warning:hover {
+  color: var(--es-white) !important;
+  background: var(--es-copper) !important;
+}
+
+.btn-outline-secondary {
+  color: var(--es-ink);
+  border-color: #BFB2A8;
+}
+
+.card {
+  border: 1px solid rgba(166,109,79,.12) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--es-shadow);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.1rem 1.35rem;
+  background: var(--es-white) !important;
+  border-bottom: 1px solid var(--es-line);
+}
+
+.card-body { padding: clamp(1.1rem, 3vw, 1.7rem); }
+
+.servico-card {
+  height: 100%;
+  border: 1px solid var(--es-line) !important;
+  border-radius: 18px !important;
+  background: var(--es-white);
+  box-shadow: 0 8px 24px rgba(40,35,33,.045);
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.servico-card:hover,
+.servico-card.selected {
+  border-color: var(--es-copper) !important;
+  background: #FFFCF8 !important;
+  box-shadow: 0 12px 28px rgba(166,109,79,.12);
+  transform: translateY(-2px);
+}
+
+.horario-btn {
+  min-height: 46px;
+  border: 1px solid var(--es-line);
+  border-radius: 12px;
+  background: var(--es-white);
+  color: var(--es-ink);
+  padding: .7rem 1rem;
+}
+
+.horario-btn:hover:not(:disabled),
+.horario-btn.selected {
+  border-color: var(--es-copper);
+  background: var(--es-cream);
+  color: var(--es-ink);
+}
+
+.step-circle {
+  border-color: var(--es-line);
+  background: var(--es-cream);
+  color: var(--es-muted);
+}
+
+.step-circle.active {
+  border-color: var(--es-copper);
+  background: var(--es-copper);
+  color: var(--es-white);
+}
+
+.step-circle.completed {
+  border-color: #647B65;
+  background: #647B65;
+  color: var(--es-white);
+}
+
+.form-control,
+.form-select {
+  min-height: 46px;
+  border: 1px solid #D9CCC1;
+  border-radius: 12px;
+  color: var(--es-ink);
+  background-color: var(--es-white);
+}
+
+textarea.form-control { min-height: 100px; }
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--es-copper);
+  box-shadow: 0 0 0 .2rem rgba(166,109,79,.14);
+}
+
+.form-label,
+.col-form-label { color: var(--es-ink); font-weight: 600; }
+
+.beauty-footer {
+  background: var(--es-ink) !important;
+  color: var(--es-white);
+}
+
+.beauty-footer p { color: rgba(255,255,255,.82); }
+
+/* Página de fidelidade e meus agendamentos */
+#form-consulta,
+#form-busca { align-items: end; }
+
+#resultado-fidelidade .display-4 { color: var(--es-copper) !important; }
+#mensagem-fidelidade { border-radius: 14px; }
+
+.badge { border-radius: 999px; padding: .5em .8em; }
+
+/* Layout mobile-first: áreas de toque, leitura e formulários confortáveis. */
+@media (max-width: 767.98px) {
+  .beauty-public-nav,
+  .navbar.fixed-top { padding-block: .55rem; }
+
+  .beauty-public-nav .container,
+  .navbar.fixed-top .container {
+    flex-wrap: wrap;
+    row-gap: .35rem;
+  }
+
+  .beauty-public-nav .navbar-nav,
+  .navbar.fixed-top .navbar-nav {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 !important;
+    gap: .15rem;
+  }
+
+  .beauty-public-nav .nav-link,
+  .navbar.fixed-top .nav-link {
+    padding: .5rem .65rem;
+    font-size: .9rem;
+  }
+
+  .hero-section { padding: 3.2rem 0 !important; }
+  .hero-section h1 { font-size: clamp(2rem, 9vw, 3rem); }
+  .hero-section .lead { font-size: 1rem; }
+
+  .container { padding-inline: 18px; }
+  .card { border-radius: 16px !important; }
+  .card-body { padding: 1.1rem; }
+
+  #progress-steps { margin-bottom: 1.8rem !important; }
+  .step-circle { width: 38px; height: 38px; }
+
+  #step2 .row.mb-3 { row-gap: .35rem; }
+  #step2 .col-form-label,
+  #step2 .col-sm-10 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  #step3 .row.mb-3 { row-gap: .35rem; }
+  #step3 .col-form-label,
+  #step3 .col-sm-10 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  #form-agendamento .d-flex.justify-content-between {
+    gap: .65rem;
+    flex-direction: column-reverse;
+  }
+
+  #form-agendamento .d-flex.justify-content-between .btn {
+    width: 100%;
+  }
+
+  .horario-btn { min-width: 0; width: 100%; }
+  #agendamentos-container > .d-flex {
+    align-items: flex-start !important;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  #agendamentos-lista .row { row-gap: .8rem; }
+  #agendamentos-lista .col-md-4 { text-align: left !important; }
+  #lista-recompensas > div,
+  #lista-produtos-resgate > div { align-items: flex-start !important; }
+
+  .modal-dialog { margin: .75rem; }
+}
+
+@media (max-width: 420px) {
+  .brand-logo { width: 38px; height: 38px; }
+  .hero-section h1 { font-size: 2rem; }
+  .hero-logo { width: 108px; height: 108px; }
+  .btn { padding-inline: 1rem; }
+  #progress-steps small { font-size: .72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
