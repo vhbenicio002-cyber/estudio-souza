@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Meus Pontos - Estúdio Souza{% endblock %}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light beauty-public-nav"><div class="container"><a class="navbar-brand fw-bold" href="/">Estúdio Souza</a><div class="navbar-nav ms-auto"><a class="nav-link" href="/">Início</a><a class="nav-link" href="/agendar">Agendar</a></div></div></nav>
+{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8">
+<div class="text-center mb-4"><h2 class="fw-bold"><i class="bi bi-award text-warning me-2"></i>Minha Fidelidade</h2><p class="text-muted">Consulte seus pontos e troque por serviços ou produtos do Estúdio Souza.</p></div>
+<div class="card shadow-sm mb-4"><div class="card-body"><form id="form-consulta" class="row g-3"><div class="col-md-6"><label class="form-label">Nome completo</label><input id="fidelidade-nome" class="form-control form-control-lg" autocomplete="name" required></div><div class="col-md-6"><label class="form-label">Telefone cadastrado</label><input id="fidelidade-telefone" class="form-control form-control-lg" type="tel" autocomplete="tel" required></div><div class="col-12"><button class="btn btn-warning btn-lg w-100 fw-bold" type="submit">Consultar meus pontos</button></div></form><small class="text-muted d-block mt-3">Para proteger seu cadastro, informe seu nome e o telefone que você utiliza no Estúdio.</small></div></div>
+<div id="resultado-fidelidade" class="d-none"><div class="card shadow-sm mb-3"><div class="card-body text-center"><p class="text-muted mb-1">Saldo disponível</p><div class="display-4 fw-bold text-warning" id="saldo-pontos">0</div><div class="text-muted" id="nome-cliente-pontos"></div></div></div><div class="card shadow-sm mb-3"><div class="card-header bg-white"><h5 class="mb-0">Serviços disponíveis</h5></div><div class="card-body" id="lista-recompensas"></div></div>
+<div class="card shadow-sm"><div class="card-header bg-white"><h5 class="mb-0">Resgatar produtos</h5><small class="text-muted">Escolha mais de um produto e informe a quantidade de cada um.</small></div><div class="card-body"><div id="lista-produtos-resgate"></div><div class="border-top pt-3 mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2"><strong>Total do resgate: <span id="total-produtos-pontos">0</span> pontos</strong><button id="btn-resgatar-produtos" class="btn btn-warning" type="button" onclick="resgatarProdutos()" disabled>Resgatar produtos selecionados</button></div></div></div></div>
+<div id="mensagem-fidelidade" class="alert d-none mt-3" role="alert"></div>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let identificacaoFidelidade = null;
+const mensagemFidelidade = document.getElementById('mensagem-fidelidade');
+
+document.getElementById('form-consulta').addEventListener('submit', async e => {
+    e.preventDefault();
+    identificacaoFidelidade = {
+        nome: document.getElementById('fidelidade-nome').value.trim(),
+        telefone: document.getElementById('fidelidade-telefone').value.trim()
+    };
+    mensagemFidelidade.className = 'alert d-none mt-3';
+    try {
+        const r = await consultarPontos();
+        mostrarConsulta(r);
+    } catch (err) {
+        document.getElementById('resultado-fidelidade').classList.add('d-none');
+        mensagemFidelidade.textContent = err.response?.data?.detail || 'Não foi possível consultar seus pontos.';
+        mensagemFidelidade.className = 'alert alert-warning mt-3';
+    }
+});
+
+async function consultarPontos() {
+    return (await axios.get('/fidelidade/consulta-publica', { params: identificacaoFidelidade })).data;
+}
+
+function mostrarConsulta(dados) {
+    document.getElementById('nome-cliente-pontos').textContent = `Olá, ${dados.cliente}!`;
+    document.getElementById('saldo-pontos').textContent = dados.pontos_atual;
+    const lista = document.getElementById('lista-recompensas');
+    const itens = dados.recompensas || [];
+    lista.innerHTML = itens.length ? itens.map(s => `<div class="d-flex justify-content-between align-items-center border-bottom py-3 gap-3"><div><strong>${esc(s.nome)}</strong><div class="text-muted small">${s.pontos} pontos</div></div><button class="btn btn-outline-warning" onclick="resgatarServico(${s.id}, this)">Trocar pontos</button></div>`).join('') : '<p class="text-muted mb-0">Não há serviços disponíveis para resgate com seu saldo atual.</p>';
+
+    const produtos = dados.produtos_disponiveis || [];
+    const listaProdutos = document.getElementById('lista-produtos-resgate');
+    listaProdutos.innerHTML = produtos.length ? produtos.map(p => `<div class="d-flex justify-content-between align-items-center border-bottom py-3 gap-3 flex-wrap"><div class="flex-grow-1"><strong>${esc(p.nome)}</strong><div class="text-muted small">R$ ${Number(p.preco).toFixed(2)} · ${p.pontos_resgate} pontos por unidade</div></div><div style="width:105px"><label class="form-label small mb-1" for="qtd-produto-${p.id}">Quantidade</label><input class="form-control quantidade-produto-resgate" id="qtd-produto-${p.id}" type="number" min="0" max="100" value="0" data-produto-id="${p.id}" data-pontos="${p.pontos_resgate}" inputmode="numeric"></div></div>`).join('') : '<p class="text-muted mb-0">Ainda não há produtos que possam ser resgatados com seu saldo atual.</p>';
+    document.querySelectorAll('.quantidade-produto-resgate').forEach(input => input.addEventListener('input', atualizarTotalProdutos));
+    atualizarTotalProdutos();
+    document.getElementById('resultado-fidelidade').classList.remove('d-none');
+}
+
+function atualizarTotalProdutos() {
+    let total = 0;
+    document.querySelectorAll('.quantidade-produto-resgate').forEach(input => {
+        const quantidade = Math.max(0, Math.min(100, Number.parseInt(input.value || '0', 10) || 0));
+        total += quantidade * Number(input.dataset.pontos || 0);
+    });
+    document.getElementById('total-produtos-pontos').textContent = total;
+    const saldo = Number(document.getElementById('saldo-pontos').textContent || 0);
+    document.getElementById('btn-resgatar-produtos').disabled = total <= 0 || total > saldo;
+}
+
+async function resgatarProdutos() {
+    if (!identificacaoFidelidade) return;
+    const itens = [...document.querySelectorAll('.quantidade-produto-resgate')]
+        .map(input => ({ produto_id: Number(input.dataset.produtoId), quantidade: Number.parseInt(input.value || '0', 10) || 0 }))
+        .filter(item => item.quantidade > 0);
+    const total = Number(document.getElementById('total-produtos-pontos').textContent || 0);
+    if (!itens.length || !confirm(`Deseja resgatar os produtos selecionados por ${total} pontos?`)) return;
+    const botao = document.getElementById('btn-resgatar-produtos');
+    botao.disabled = true;
+    try {
+        const r = await axios.post('/fidelidade/resgatar-produtos-publico', { ...identificacaoFidelidade, itens });
+        const atualizados = await consultarPontos();
+        mostrarConsulta(atualizados);
+        mensagemFidelidade.textContent = `${r.data.message} Foram debitados ${r.data.pontos_resgatados} pontos.`;
+        mensagemFidelidade.className = 'alert alert-success mt-3';
+    } catch (err) {
+        mensagemFidelidade.textContent = err.response?.data?.detail || 'Não foi possível realizar o resgate.';
+        mensagemFidelidade.className = 'alert alert-warning mt-3';
+        atualizarTotalProdutos();
+    } finally {
+        atualizarTotalProdutos();
+    }
+}
+
+async function resgatarServico(servico_id, botao) {
+    if (!identificacaoFidelidade || !confirm('Deseja realmente trocar seus pontos por este serviço?')) return;
+    if (botao?.disabled) return;
+    if (botao) {
+        botao.disabled = true;
+        botao.dataset.textoOriginal = botao.textContent;
+        botao.textContent = 'Processando...';
+    }
+    try {
+        const r = await axios.post('/fidelidade/resgatar-publico', { ...identificacaoFidelidade, servico_id });
+        const dadosAtualizados = await consultarPontos();
+        mostrarConsulta(dadosAtualizados);
+        mensagemFidelidade.textContent = r.data.message;
+        mensagemFidelidade.className = 'alert alert-success mt-3';
+    } catch (err) {
+        mensagemFidelidade.textContent = err.response?.data?.detail || 'Não foi possível realizar o resgate.';
+        mensagemFidelidade.className = 'alert alert-warning mt-3';
+    } finally {
+        if (botao?.isConnected) {
+            botao.disabled = false;
+            botao.textContent = botao.dataset.textoOriginal || 'Trocar pontos';
+        }
+    }
+}
+
+function esc(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+{% endblock %}

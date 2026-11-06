@@ -1,0 +1,356 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Configurações - Estúdio Souza Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-gear text-warning me-2"></i>Configurações</h1>
+</div>
+
+<!-- Abas -->
+<ul class="nav nav-tabs mb-4" id="configTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-geral" data-bs-toggle="tab" data-bs-target="#painel-geral" type="button">
+            <i class="bi bi-info-circle me-1"></i>Geral
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-horarios" data-bs-toggle="tab" data-bs-target="#painel-horarios" type="button">
+            <i class="bi bi-clock me-1"></i>Horários
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-agendamento" data-bs-toggle="tab" data-bs-target="#painel-agendamento" type="button">
+            <i class="bi bi-calendar-check me-1"></i>Agendamento
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-whatsapp" data-bs-toggle="tab" data-bs-target="#painel-whatsapp" type="button">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Geral -->
+    <div class="tab-pane fade show active" id="painel-geral" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Informações do Espaço</h5>
+            </div>
+            <div class="card-body">
+                <form id="formGeral" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nome do Espaço *</label>
+                        <input type="text" class="form-control" id="cfg-nome" name="nome_barbearia" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Telefone de Contato</label>
+                        <input type="tel" class="form-control" id="cfg-telefone" name="telefone_contato" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email de Contato</label>
+                        <input type="email" class="form-control" id="cfg-email" name="email_contato" placeholder="contato@ateliedebeleza.com">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Endereço</label>
+                        <textarea class="form-control" id="cfg-endereco" name="endereco" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Instagram</label>
+                        <input type="text" class="form-control" id="cfg-instagram" name="instagram" placeholder="@seuatelie">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">WhatsApp (para link direto)</label>
+                        <input type="tel" class="form-control" id="cfg-whatsapp" name="whatsapp_numero" placeholder="5511999999999">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save me-1"></i>Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horários -->
+    <div class="tab-pane fade" id="painel-horarios" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Horário de Funcionamento</h5>
+            </div>
+            <div class="card-body">
+                <form id="formHorarios" class="row g-3">
+                    {% for dia, abre, fecha in [
+                        ('Segunda', 'abre_segunda', 'fecha_segunda'),
+                        ('Terça', 'abre_terca', 'fecha_terca'),
+                        ('Quarta', 'abre_quarta', 'fecha_quarta'),
+                        ('Quinta', 'abre_quinta', 'fecha_quinta'),
+                        ('Sexta', 'abre_sexta', 'fecha_sexta'),
+                        ('Sábado', 'abre_sabado', 'fecha_sabado'),
+                        ('Domingo', 'abre_domingo', 'fecha_domingo')
+                    ] %}
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-3 p-3 border rounded">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="{{ abre }}" name="{{ abre }}">
+                                <label class="form-check-label fw-bold" for="{{ abre }}">{{ dia }}</label>
+                            </div>
+                            <div class="ms-auto">
+                                <label class="form-label mb-0 small">Até</label>
+                                <input type="time" class="form-control form-control-sm" id="{{ fecha }}" name="{{ fecha }}" style="width: 100px;">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save me-1"></i>Salvar Horários</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agendamento -->
+    <div class="tab-pane fade" id="painel-agendamento" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Regras de Agendamento</h5>
+            </div>
+            <div class="card-body">
+                <form id="formAgendamentoConfig" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Intervalo entre slots (min)</label>
+                        <input type="number" class="form-control" id="cfg-intervalo" name="intervalo_slots_minutos" min="15" max="60" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Antecedência Mínima (horas)</label>
+                        <input type="number" class="form-control" id="cfg-antecedencia-min" name="antecedencia_minima_horas" min="0" max="24" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Antecedência Máxima (dias)</label>
+                        <input type="number" class="form-control" id="cfg-antecedencia-max" name="antecedencia_maxima_dias" min="1" max="90" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cancelamento Mínimo (horas)</label>
+                        <input type="number" class="form-control" id="cfg-cancelamento" name="permite_cancelamento_horas" min="0" max="24" required>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save me-1"></i>Salvar Regras</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp -->
+    <div class="tab-pane fade" id="painel-whatsapp" role="tabpanel">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Configuração do Provedor</h5>
+            </div>
+            <div class="card-body">
+                <form id="formWhatsApp" class="row g-3">
+                    <div class="col-12">
+                        <div class="alert alert-info mb-0">
+                            <strong>Configuração do provedor WhatsApp</strong>
+                            <p class="mb-2 mt-2">
+                                A conexão com o provedor é configurada pelas variáveis
+                                de ambiente da hospedagem, e não por este painel.
+                            </p>
+                            <p class="mb-0">
+                                Configure no Render as variáveis
+                                WHATSAPP_PROVIDER, WHATSAPP_API_URL,
+                                WHATSAPP_API_TOKEN, WHATSAPP_INSTANCE_ID
+                                e WHATSAPP_FROM_NUMBER.
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Notificações Automáticas</h5>
+            </div>
+            <div class="card-body">
+                <form id="formNotificacoes" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="cfg-whatsapp-confirmacao" name="whatsapp_confirmacao_ativa">
+                            <label class="form-check-label" for="cfg-whatsapp-confirmacao">Enviar confirmação de agendamento</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="cfg-whatsapp-lembrete" name="whatsapp_lembrete_ativo">
+                            <label class="form-check-label" for="cfg-whatsapp-lembrete">Enviar lembrete automático</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lembrete (horas antes)</label>
+                        <input type="number" class="form-control" id="cfg-whatsapp-lembrete-horas" name="whatsapp_lembrete_horas" min="1" max="24">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save me-1"></i>Salvar Notificações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin User -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Alterar Senha do Admin</h5>
+            </div>
+            <div class="card-body">
+                <form id="formSenhaAdmin" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Senha Atual</label>
+                        <input type="password" class="form-control" id="admin-senha-atual">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="admin-nova-senha">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Confirmar Nova Senha</label>
+                        <input type="password" class="form-control" id="admin-confirmar-senha">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-key me-1"></i>Alterar Senha</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    carregarConfiguracoes();
+
+    document.getElementById('formGeral').addEventListener('submit', (e) => salvarConfig(e, '/configuracao/', 'Configurações gerais salvas'));
+    document.getElementById('formHorarios').addEventListener('submit', (e) => salvarConfig(e, '/configuracao/', 'Horários salvos'));
+    document.getElementById('formAgendamentoConfig').addEventListener('submit', (e) => salvarConfig(e, '/configuracao/', 'Regras de agendamento salvas'));
+    document.getElementById('formWhatsApp').addEventListener('submit', (e) => salvarConfig(e, '/configuracao/', 'WhatsApp configurado'));
+    document.getElementById('formNotificacoes').addEventListener('submit', (e) => salvarConfig(e, '/configuracao/', 'Notificações salvas'));
+    document.getElementById('formSenhaAdmin').addEventListener('submit', alterarSenhaAdmin);
+});
+
+async function carregarConfiguracoes() {
+    try {
+        const resp = await AdminUtils.api.get('/configuracao/');
+        const c = resp;
+
+        // Geral
+        document.getElementById('cfg-nome').value = c.nome_barbearia;
+        document.getElementById('cfg-telefone').value = c.telefone_contato || '';
+        document.getElementById('cfg-email').value = c.email_contato || '';
+        document.getElementById('cfg-endereco').value = c.endereco || '';
+        document.getElementById('cfg-instagram').value = c.instagram || '';
+        document.getElementById('cfg-whatsapp').value = c.whatsapp_numero || '';
+
+        // Horários
+        const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+        dias.forEach(dia => {
+            const abre = document.getElementById(`abre_${dia}`);
+            const fecha = document.getElementById(`fecha_${dia}`);
+            if (abre) abre.checked = c[`abre_${dia}`];
+            if (fecha) fecha.value = c[`fecha_${dia}`]?.substring(0, 5) || '18:00';
+        });
+
+        // Agendamento
+        document.getElementById('cfg-intervalo').value = c.intervalo_slots_minutos;
+        document.getElementById('cfg-antecedencia-min').value = c.antecedencia_minima_horas;
+        document.getElementById('cfg-antecedencia-max').value = c.antecedencia_maxima_dias;
+        document.getElementById('cfg-cancelamento').value = c.permite_cancelamento_horas;
+
+        // WhatsApp
+        document.getElementById('cfg-whatsapp-confirmacao').checked = c.whatsapp_confirmacao_ativa;
+        document.getElementById('cfg-whatsapp-lembrete').checked = c.whatsapp_lembrete_ativo;
+        document.getElementById('cfg-whatsapp-lembrete-horas').value = c.whatsapp_lembrete_horas;
+    } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+    }
+}
+
+async function salvarConfig(e, url, msgSucesso) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    AdminUtils.setLoading(btn, true);
+
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        // Converter checkboxes
+        if (value === 'on') value = true;
+        if (value === '') value = null;
+        // Converter números
+        if (key.includes('intervalo') || key.includes('antecedencia') || key.includes('cancelamento') || key.includes('lembrete_horas')) {
+            value = value ? parseInt(value) : null;
+        }
+        data[key] = value;
+    }
+
+    try {
+        await AdminUtils.api.put(url, data);
+        AdminUtils.showToast(msgSucesso);
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao salvar', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+async function testarWhatsApp() {
+    const btn = event.target;
+    AdminUtils.setLoading(btn, true);
+
+    try {
+        const whatsapp = new (await import('/static/js/whatsapp.js')).WhatsAppService();
+        // Mock test
+        AdminUtils.showToast('WhatsApp de teste enviado (mock)', 'success');
+    } catch (error) {
+        AdminUtils.showToast('Erro ao testar WhatsApp', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+async function alterarSenhaAdmin(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    AdminUtils.setLoading(btn, true);
+
+    const atual = document.getElementById('admin-senha-atual').value;
+    const nova = document.getElementById('admin-nova-senha').value;
+    const confirmar = document.getElementById('admin-confirmar-senha').value;
+
+    if (nova !== confirmar) {
+        AdminUtils.showToast('Nova senha e confirmação não coincidem', 'danger');
+        AdminUtils.setLoading(btn, false);
+        return;
+    }
+
+    if (nova.length < 6) {
+        AdminUtils.showToast('Nova senha deve ter pelo menos 6 caracteres', 'danger');
+        AdminUtils.setLoading(btn, false);
+        return;
+    }
+
+    try {
+        await AdminUtils.api.put('/auth/alterar-senha', { senha_atual: atual, nova_senha: nova });
+        AdminUtils.showToast('Senha alterada com sucesso');
+        document.getElementById('formSenhaAdmin').reset();
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao alterar senha', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+</script>
+{% endblock %}

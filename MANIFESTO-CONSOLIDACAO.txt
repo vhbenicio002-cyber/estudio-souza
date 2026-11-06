@@ -1,0 +1,22 @@
+ESTUDIO SOUZA - PACOTE CONSOLIDADO
+Base: backup original de 62 arquivos, confirmado idêntico ao ZIP do GitHub.
+Nove arquivos corrigidos foram incorporados nesta cópia.
+Backups originais não foram alterados.
+Este pacote ainda NÃO foi publicado.
+
+ARQUIVOS ATUALIZADOS:
+app/config.py | SHA256 06b1db92d0dee3ed76ffbce4c3202d8bfa25a1d8d1664fee8bbad014c7229ecd
+app/main.py | SHA256 257843e0f81d5f0970829ac8ee4ca1f93d8fa73287d065a9a8a13fd39484e095
+app/routes/agendamentos.py | SHA256 614c80c978572998f6e47da04d5636b87220ba3cbfe9d08a7e298cb58e55062c
+app/routes/publico.py | SHA256 ecc57d76d7418283f1f9bf68f2e140414544dd575f4987f1c51e09faa2e18526
+app/routes/clientes.py | SHA256 019ec7cc39b23824945ca8c95ead510a974f84e8ab2c54a81b9bc71e5428538e
+app/services/notificacao.py | SHA256 2476aeeda6c01e86d0e1a696cbb3bf6d23a7985bb408d03750e927d73e86653f
+app/services/whatsapp.py | SHA256 6e8822835e82d6f135b10ca3da065d15537d55ccfd071b0a4f83846b02c5b45a
+app/templates/admin/configuracoes.html | SHA256 515381410828538cda541c5c54fbef03caff9ef07b42556ea86e25ca0e63c4e9
+app/templates/public/agendar.html | SHA256 dc93fd978d917307754afe97359a099579af9ed0abb7a6dd9a98790a52c94ab8
+
+REVISAO ESPECIAL ANTES DA PRODUCAO:
+- app/config.py: inclui ENABLE_BACKGROUND_JOBS, desativado por padrão.
+- app/main.py: inicialização read-only, sem criação automática de schema/admin/seed.
+- Conferir variáveis de ambiente e compatibilidade com o ambiente de produção.
+- Não aplicar sem backup e autorização expressa.

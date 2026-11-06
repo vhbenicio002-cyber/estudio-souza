@@ -1,0 +1,278 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Serviços - Estúdio Souza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0"><i class="bi bi-stars text-warning me-2"></i>Serviços</h1>
+    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalServico">
+        <i class="bi bi-plus-lg me-1"></i>Novo Serviço
+    </button>
+</div>
+
+<!-- Filtros (colapsível) -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2" style="cursor:pointer" onclick="toggleFiltrosServicos()">
+        <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h6>
+        <i class="bi bi-chevron-down" id="filtros-servicos-chevron"></i>
+    </div>
+    <div class="card-body" id="filtros-servicos-body" style="display:none">
+        <form id="form-filtros" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="filtro-busca" placeholder="Buscar por nome ou categoria...">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="filtro-ativo">
+                    <option value="">Todos</option>
+                    <option value="true">Ativos</option>
+                    <option value="false">Inativos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search me-1"></i>Filtrar</button>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="limparFiltrosServicos()"><i class="bi bi-x-circle me-1"></i>Limpar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabela-servicos">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Ordem</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th class="text-center">Duração</th>
+                        <th class="text-end">Preço</th>
+                        <th class="text-center">Pontos resgate</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end" style="width: 120px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="spinner-border text-warning"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Serviço -->
+<div class="modal fade" id="modalServico" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalServicoTitle"><i class="bi bi-stars me-2"></i>Novo Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formServico">
+                <div class="modal-body">
+                    <input type="hidden" id="servico-id" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="servico-nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-control" id="servico-descricao" name="descricao" rows="2"></textarea>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Preço *</label>
+                            <input type="number" class="form-control" id="servico-preco" name="preco" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Duração (minutos) *</label>
+                            <input type="number" class="form-control" id="servico-duracao" name="duracao_minutos" min="1" max="480" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Categoria</label>
+                            <input type="text" class="form-control" id="servico-categoria" name="categoria" placeholder="Ex: Cílios, Sobrancelhas, Manicure">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ordem</label>
+                            <input type="number" class="form-control" id="servico-ordem" name="ordem" value="0" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Pontos para resgatar este serviço</label>
+                            <input type="number" class="form-control" id="servico-pontos-resgate" name="pontos_resgate" value="0" min="0">
+                            <small class="text-muted">Use 0 para não oferecer como recompensa.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold" id="btn-salvar-servico">
+                        <i class="bi bi-save me-1"></i>Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let filtrosServicosAbertos = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    carregarServicos();
+    document.getElementById('formServico').addEventListener('submit', salvarServico);
+    document.getElementById('modalServico').addEventListener('hidden.bs.modal', limparFormServico);
+
+    // Filtros
+    const formFiltros = document.getElementById('form-filtros');
+    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); carregarServicos(); });
+    ['filtro-busca', 'filtro-ativo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => carregarServicos());
+        if (el) el.addEventListener('change', () => carregarServicos());
+    });
+});
+
+function toggleFiltrosServicos() {
+    const body = document.getElementById('filtros-servicos-body');
+    const chevron = document.getElementById('filtros-servicos-chevron');
+    filtrosServicosAbertos = !filtrosServicosAbertos;
+    body.style.display = filtrosServicosAbertos ? 'block' : 'none';
+    chevron.style.transform = filtrosServicosAbertos ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+async function carregarServicos() {
+    const busca = document.getElementById('filtro-busca').value;
+    const ativo = document.getElementById('filtro-ativo').value;
+
+    try {
+        const params = new URLSearchParams({ limit: 200 });
+        if (busca) params.append('busca', busca);
+        if (ativo) params.append('ativo', ativo);
+
+        const resp = await AdminUtils.api.get(`/servicos/?${params.toString()}`);
+        renderizarTabela(resp);
+    } catch (error) {
+        console.error('Erro ao carregar serviços:', error);
+        AdminUtils.showToast('Erro ao carregar serviços', 'danger');
+    }
+}
+
+function renderizarTabela(servicos) {
+    const tbody = document.querySelector('#tabela-servicos tbody');
+
+    if (servicos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Nenhum serviço cadastrado</td></tr>';
+        return;
+    }
+
+    let html = '';
+    servicos.forEach(s => {
+        html += `
+            <tr>
+                <td><span class="badge bg-light text-dark">${s.ordem}</span></td>
+                <td><strong>${s.nome}</strong><br><small class="text-muted">${s.descricao || '-'}</small></td>
+                <td>${s.categoria ? `<span class="badge bg-info text-dark">${s.categoria}</span>` : '<span class="text-muted">-</span>'}</td>
+                <td class="text-center"><i class="bi bi-clock me-1"></i>${s.duracao_minutos} min</td>
+                <td class="text-end fw-bold text-warning">R$ ${s.preco.toFixed(2).replace('.', ',')}</td>
+                <td class="text-center">${s.pontos_resgate || 0}</td>
+                <td class="text-center">
+                    ${s.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editarServico(${s.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-outline-${s.ativo ? 'warning' : 'success'}" onclick="toggleServico(${s.id}, ${!s.ativo})" title="${s.ativo ? 'Desativar' : 'Ativar'}">
+                            <i class="bi bi-${s.ativo ? 'toggle-off' : 'toggle-on'}"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+function limparFormServico() {
+    document.getElementById('formServico').reset();
+    document.getElementById('servico-id').value = '';
+    document.getElementById('servico-ordem').value = '0';
+    document.getElementById('servico-pontos-resgate').value = '0';
+    document.getElementById('modalServicoTitle').innerHTML = '<i class="bi bi-stars me-2"></i>Novo Serviço';
+}
+
+function editarServico(id) {
+    AdminUtils.api.get(`/servicos/${id}`).then(s => {
+        document.getElementById('servico-id').value = s.id;
+        document.getElementById('servico-nome').value = s.nome;
+        document.getElementById('servico-descricao').value = s.descricao || '';
+        document.getElementById('servico-preco').value = s.preco;
+        document.getElementById('servico-duracao').value = s.duracao_minutos;
+        document.getElementById('servico-categoria').value = s.categoria || '';
+        document.getElementById('servico-ordem').value = s.ordem;
+        document.getElementById('servico-pontos-resgate').value = s.pontos_resgate || 0;
+        document.getElementById('modalServicoTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Serviço';
+        new bootstrap.Modal(document.getElementById('modalServico')).show();
+    }).catch(() => AdminUtils.showToast('Erro ao carregar serviço', 'danger'));
+}
+
+async function salvarServico(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-salvar-servico');
+    AdminUtils.setLoading(btn, true);
+
+    const id = document.getElementById('servico-id').value;
+    const data = {
+        nome: document.getElementById('servico-nome').value,
+        descricao: document.getElementById('servico-descricao').value || null,
+        preco: parseFloat(document.getElementById('servico-preco').value),
+        duracao_minutos: parseInt(document.getElementById('servico-duracao').value),
+        categoria: document.getElementById('servico-categoria').value || null,
+        ordem: parseInt(document.getElementById('servico-ordem').value),
+        pontos_resgate: parseInt(document.getElementById('servico-pontos-resgate').value || '0'),
+    };
+
+    try {
+        if (id) {
+            await AdminUtils.api.put(`/servicos/${id}`, data);
+            AdminUtils.showToast('Serviço atualizado');
+        } else {
+            await AdminUtils.api.post('/servicos/', data);
+            AdminUtils.showToast('Serviço criado');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('modalServico')).hide();
+        carregarServicos();
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao salvar', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+async function toggleServico(id, ativo) {
+    try {
+        await AdminUtils.api.put(`/servicos/${id}`, { ativo });
+        AdminUtils.showToast(`Serviço ${ativo ? 'ativado' : 'desativado'}`);
+        carregarServicos();
+    } catch (error) {
+        AdminUtils.showToast('Erro ao alterar status', 'danger');
+    }
+}
+
+function limparFiltrosServicos() {
+    document.getElementById('filtro-busca').value = '';
+    document.getElementById('filtro-ativo').value = '';
+    carregarServicos();
+}
+</script>
+{% endblock %}

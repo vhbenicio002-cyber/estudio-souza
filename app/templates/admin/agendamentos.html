@@ -1,0 +1,464 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Agendamentos - Estúdio Souza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0"><i class="bi bi-calendar-check text-warning me-2"></i>Agendamentos</h1>
+    <div class="btn-group btn-group-sm" role="group">
+        <button class="btn btn-outline-primary" onclick="filtrarHoje()" title="Hoje"><i class="bi bi-calendar-day"></i></button>
+        <button class="btn btn-outline-primary" onclick="filtrarSemana()" title="Esta semana"><i class="bi bi-calendar-week"></i></button>
+        <button class="btn btn-outline-primary" onclick="filtrarMes()" title="Este mês"><i class="bi bi-calendar-month"></i></button>
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalAgendamento" title="Novo agendamento"><i class="bi bi-plus-lg"></i></button>
+    </div>
+</div>
+
+<!-- Filtros (colapsível) -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2" style="cursor:pointer" onclick="toggleFiltros()">
+        <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h6>
+        <i class="bi bi-chevron-down" id="filtros-chevron"></i>
+    </div>
+    <div class="card-body" id="filtros-body" style="display:none">
+        <form id="form-filtros" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="filtro-status">
+                    <option value="pendente,confirmado,em_andamento" selected>Em aberto (pendentes, confirmados e em andamento)</option>
+                    <option value="">Todos</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="em_andamento">Em andamento</option>
+                    <option value="concluido" disabled>Concluído (use o botão Concluir)</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="nao_compareceu">Não compareceu</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Data Início</label>
+                <input type="date" class="form-control" id="filtro-data-inicio">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Data Fim</label>
+                <input type="date" class="form-control" id="filtro-data-fim">
+            </div>
+            
+            <div class="col-12">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-success fw-bold" onclick="carregarAgendamentos()">
+                        <i class="bi bi-check-circle me-1"></i>Aplicar Filtros
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="limparFiltros()">
+                        <i class="bi bi-x-circle me-1"></i>Limpar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabela-agendamentos">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Serviço</th>
+                        <th>Data/Hora</th>
+                        <th>Atendimento</th>
+                        <th>Status</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="spinner-border text-warning"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agendamento -->
+<div class="modal fade" id="modalAgendamento" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalAgendamentoTitle"><i class="bi bi-calendar-plus me-2"></i>Novo Agendamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formAgendamento">
+                <div class="modal-body">
+                    <input type="hidden" id="agendamento-id" name="id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cliente *</label>
+                            <select class="form-select" id="agendamento-cliente" name="cliente_id" required>
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Serviço *</label>
+                            <select class="form-select" id="agendamento-servico" name="servico_id" required>
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data *</label>
+                            <input type="date" class="form-control" id="agendamento-data" name="data" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora *</label>
+                            <input type="time" class="form-control" id="agendamento-hora" name="hora" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" id="agendamento-observacoes" name="observacoes" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold" id="btn-salvar-agendamento">
+                        <i class="bi bi-save me-1"></i>Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar (verde, com confirmação) -->
+<div class="modal fade" id="modalConfirmar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2"></i>Confirmar Agendamento</h5>
+            </div>
+            <div class="modal-body">
+                <p>Deseja confirmar este agendamento?</p>
+                <p class="text-muted small">O status mudará de "Pendente" para "Confirmado"</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success fw-bold" onclick="confirmarAgendamento()">
+                    <i class="bi bi-check-circle me-1"></i>Sim, Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Status Completo (outros status) -->
+<div class="modal fade" id="modalStatusFull" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-flag me-2"></i>Alterar Status</h5>
+            </div>
+            <div class="modal-body">
+                <p>Alterar status do agendamento:</p>
+                <select class="form-select" id="novo-status-full">
+                    <option value="pendente">Pendente</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="em_andamento">Em andamento</option>
+                    <option value="concluido" disabled>Concluído (use o botão Concluir)</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="nao_compareceu">Não compareceu</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning fw-bold" onclick="confirmarStatusFull()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let agendamentoParaStatus = null;
+let clientesCache = [];
+let servicosCache = [];
+let filtrosAbertos = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDadosComplementares();
+    // Carregar também os atendimentos em andamento, que podem ser concluídos.
+    document.getElementById('filtro-status').value = 'pendente,confirmado,em_andamento';
+    carregarAgendamentos();
+    setInterval(carregarAgendamentos, 30000);
+    document.getElementById('formAgendamento').addEventListener('submit', salvarAgendamento);
+    document.getElementById('modalAgendamento').addEventListener('hidden.bs.modal', limparFormAgendamento);
+
+    // Filtros - submit apenas no botão Aplicar
+    const formFiltros = document.getElementById('form-filtros');
+    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); carregarAgendamentos(); });
+
+    // Definir data mínima como hoje
+    const agora = new Date(); document.getElementById('agendamento-data').min = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+});
+
+function dataLocalISO(data) {
+    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+}
+
+function toggleFiltros() {
+    const body = document.getElementById('filtros-body');
+    const chevron = document.getElementById('filtros-chevron');
+    filtrosAbertos = !filtrosAbertos;
+    body.style.display = filtrosAbertos ? 'block' : 'none';
+    chevron.style.transform = filtrosAbertos ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+async function carregarDadosComplementares() {
+    try {
+        const [clientes, servicos] = await Promise.all([
+            AdminUtils.api.get('/clientes/?limit=500&ativo=true'),
+            AdminUtils.api.get('/servicos/publico')
+        ]);
+
+        clientesCache = clientes;
+        servicosCache = servicos;
+
+        const clienteSelect = document.getElementById('agendamento-cliente');
+        clientes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.nome} - ${c.telefone}`;
+            clienteSelect.appendChild(opt);
+        });
+
+        const servicoSelect = document.getElementById('agendamento-servico');
+        servicos.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `${s.nome} (R$ ${s.preco.toFixed(2).replace('.', ',')}, ${s.duracao_minutos}min)`;
+            servicoSelect.appendChild(opt);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar dados complementares:', error);
+    }
+}
+
+async function carregarAgendamentos() {
+    const status = document.getElementById('filtro-status').value;
+    const dataInicio = document.getElementById('filtro-data-inicio').value;
+    const dataFim = document.getElementById('filtro-data-fim').value;
+
+    try {
+        const params = new URLSearchParams({ limit: 100 });
+        if (status) params.append('status', status);
+        if (dataInicio) params.append('data_inicio', dataInicio + 'T00:00:00');
+        if (dataFim) params.append('data_fim', dataFim + 'T23:59:59');
+
+        const resp = await AdminUtils.api.get(`/agendamentos/?${params.toString()}`);
+        renderizarTabela(resp);
+    } catch (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+        AdminUtils.showToast('Erro ao carregar agendamentos', 'danger');
+    }
+}
+
+function renderizarTabela(agendamentos) {
+    const tbody = document.querySelector('#tabela-agendamentos tbody');
+
+    if (agendamentos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum agendamento encontrado</td></tr>';
+        return;
+    }
+
+    let html = '';
+    agendamentos.forEach(a => {
+        const data = new Date(a.data_hora);
+        html += `
+            <tr>
+                <td><strong>${a.cliente.nome}</strong><br><small class="text-muted">${a.cliente.telefone}</small></td>
+                <td>${a.servico.nome}</td>
+                <td>
+                    ${AdminUtils.formatarData(a.data_hora)}<br>
+                    <small>${AdminUtils.formatarHora(a.data_hora)}</small>
+                </td>
+                <td>Atendimento individual</td>
+                <td>${AdminUtils.getStatusBadge(a.status)}</td>
+                <td class="text-end fw-bold text-warning">R$ ${a.preco.toFixed(2).replace('.', ',')}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editarAgendamento(${a.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+                        ${a.status === 'pendente' ? `<button class="btn btn-success" onclick="abrirConfirmar(${a.id}, '${a.status}')" title="Confirmar agendamento"><i class="bi bi-check-circle-fill"></i></button>` : ''}
+                        ${['pendente','confirmado','em_andamento'].includes(a.status) ? `<button class="btn btn-primary" ${a.pode_concluir ? `onclick="concluirAgendamento(${a.id})"` : 'disabled'} title="${a.pode_concluir ? 'Concluir atendimento' : `Disponível entre ${AdminUtils.formatarHora(a.janela_conclusao_inicio)} e ${AdminUtils.formatarHora(a.janela_conclusao_fim)}`}"><i class="bi bi-check2-all"></i></button>` : ''}
+                        <button class="btn btn-outline-warning" onclick="abrirStatusFull(${a.id}, '${a.status}')" title="Outros status"><i class="bi bi-flag"></i></button>
+                        <button class="btn btn-outline-danger" onclick="excluirAgendamento(${a.id})" title="Cancelar"><i class="bi bi-x-circle"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+function filtrarHoje() {
+    const agora = new Date(); const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+    document.getElementById('filtro-data-inicio').value = hoje;
+    document.getElementById('filtro-data-fim').value = hoje;
+    carregarAgendamentos();
+}
+
+function filtrarSemana() {
+    const hoje = new Date();
+    const inicio = new Date(hoje);
+    inicio.setDate(hoje.getDate() - hoje.getDay() + 1);
+    const fim = new Date(inicio);
+    fim.setDate(inicio.getDate() + 6);
+
+    document.getElementById('filtro-data-inicio').value = dataLocalISO(inicio);
+    document.getElementById('filtro-data-fim').value = dataLocalISO(fim);
+    carregarAgendamentos();
+}
+
+function filtrarMes() {
+    const hoje = new Date();
+    const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+    document.getElementById('filtro-data-inicio').value = dataLocalISO(inicio);
+    document.getElementById('filtro-data-fim').value = dataLocalISO(fim);
+    carregarAgendamentos();
+}
+
+function limparFormAgendamento() {
+    document.getElementById('formAgendamento').reset();
+    document.getElementById('agendamento-id').value = '';
+    document.getElementById('modalAgendamentoTitle').innerHTML = '<i class="bi bi-calendar-plus me-2"></i>Novo Agendamento';
+    const agora = new Date(); document.getElementById('agendamento-data').min = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+}
+
+function editarAgendamento(id) {
+    AdminUtils.api.get(`/agendamentos/${id}`).then(a => {
+        document.getElementById('agendamento-id').value = a.id;
+        document.getElementById('agendamento-cliente').value = a.cliente_id;
+        document.getElementById('agendamento-servico').value = a.servico_id;
+        document.getElementById('agendamento-data').value = a.data_hora.split('T')[0];
+        document.getElementById('agendamento-hora').value = a.data_hora.split('T')[1].substring(0, 5);
+        document.getElementById('agendamento-observacoes').value = a.observacoes || '';
+        document.getElementById('modalAgendamentoTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Agendamento';
+        new bootstrap.Modal(document.getElementById('modalAgendamento')).show();
+    }).catch(err => {
+        console.error('Erro ao carregar agendamento:', err);
+        AdminUtils.showToast(err.response?.data?.detail || err.message || 'Erro ao carregar agendamento', 'danger');
+    });
+}
+
+async function salvarAgendamento(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-salvar-agendamento');
+    AdminUtils.setLoading(btn, true);
+
+    const id = document.getElementById('agendamento-id').value;
+    const data = {
+        cliente_id: parseInt(document.getElementById('agendamento-cliente').value),
+        servico_id: parseInt(document.getElementById('agendamento-servico').value),
+        data_hora: document.getElementById('agendamento-data').value + 'T' + document.getElementById('agendamento-hora').value,
+        observacoes: document.getElementById('agendamento-observacoes').value || null,
+    };
+
+    try {
+        if (id) {
+            await AdminUtils.api.put(`/agendamentos/${id}`, data);
+            AdminUtils.showToast('Agendamento atualizado');
+        } else {
+            await AdminUtils.api.post('/agendamentos/', data);
+            AdminUtils.showToast('Agendamento criado');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('modalAgendamento')).hide();
+        carregarAgendamentos();
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao salvar', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+function abrirConfirmar(id, statusAtual) {
+    if (statusAtual !== 'pendente') {
+        AdminUtils.showToast('Só é possível confirmar agendamentos pendentes', 'warning');
+        return;
+    }
+    agendamentoParaStatus = id;
+    new bootstrap.Modal(document.getElementById('modalConfirmar')).show();
+}
+
+async function confirmarAgendamento() {
+    try {
+        await AdminUtils.api.patch(`/agendamentos/${agendamentoParaStatus}/status`, { status: 'confirmado' });
+        AdminUtils.showToast('Agendamento confirmado com sucesso!');
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmar')).hide();
+        carregarAgendamentos();
+    } catch (error) {
+        console.error('Erro ao confirmar:', error);
+        AdminUtils.showToast(error.response?.data?.detail || error.message || 'Erro ao confirmar', 'danger');
+    }
+}
+
+async function concluirAgendamento(id) {
+    if (!confirm('Confirmar que este atendimento foi concluído? Os pontos de fidelidade serão creditados automaticamente.')) return;
+    try {
+        await AdminUtils.api.patch(`/agendamentos/${id}/status`, { status: 'concluido' });
+        AdminUtils.showToast('Atendimento concluído e pontos processados!');
+        carregarAgendamentos();
+    } catch (error) {
+        console.error('Erro ao concluir atendimento:', error);
+        AdminUtils.showToast(error.response?.data?.detail || error.message || 'Não foi possível concluir o atendimento', 'danger');
+        carregarAgendamentos();
+    }
+}
+
+function abrirStatusFull(id, statusAtual) {
+    agendamentoParaStatus = id;
+    document.getElementById('novo-status-full').value = statusAtual;
+    new bootstrap.Modal(document.getElementById('modalStatusFull')).show();
+}
+
+async function confirmarStatusFull() {
+    const novoStatus = document.getElementById('novo-status-full').value;
+
+    try {
+        await AdminUtils.api.patch(`/agendamentos/${agendamentoParaStatus}/status`, { status: novoStatus });
+        AdminUtils.showToast('Status atualizado');
+        bootstrap.Modal.getInstance(document.getElementById('modalStatusFull')).hide();
+        carregarAgendamentos();
+    } catch (error) {
+        console.error('Erro ao alterar status:', error);
+        AdminUtils.showToast(error.response?.data?.detail || error.message || 'Erro ao alterar status', 'danger');
+    }
+}
+
+async function excluirAgendamento(id) {
+    if (!confirm('Tem certeza que deseja cancelar este agendamento?')) return;
+
+    try {
+        await AdminUtils.api.delete(`/agendamentos/${id}`);
+        AdminUtils.showToast('Agendamento cancelado');
+        carregarAgendamentos();
+    } catch (error) {
+        AdminUtils.showToast('Erro ao cancelar', 'danger');
+    }
+}
+
+function limparFiltros() {
+    document.getElementById('filtro-status').value = 'pendente,confirmado,em_andamento';
+    document.getElementById('filtro-data-inicio').value = '';
+    document.getElementById('filtro-data-fim').value = '';
+    carregarAgendamentos();
+}
+</script>
+{% endblock %}

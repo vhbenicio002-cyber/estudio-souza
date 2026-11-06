@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Agendamentos - Estúdio Souza{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light beauty-public-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-stars me-2"></i>Estúdio Souza
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/">Início</a>
+            <a class="nav-link" href="/fidelidade">Meus Pontos</a>
+            <a class="nav-link" href="/agendar">Novo Agendamento</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold"><i class="bi bi-calendar-check text-warning me-2"></i>Meus Agendamentos</h2>
+                <p class="text-muted">Digite seu telefone para ver seus agendamentos</p>
+            </div>
+
+            <!-- Busca por telefone -->
+            <div class="card shadow-sm mb-4" id="busca-card">
+                <div class="card-body">
+                    <form id="form-busca" class="row g-3">
+                        <div class="col-md-8">
+                            <input type="tel" class="form-control form-control-lg" id="telefone-busca" placeholder="(11) 99999-9999" required>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold">
+                                <i class="bi bi-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de agendamentos -->
+            <div id="agendamentos-container" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Seus Agendamentos</h5>
+                    <button class="btn btn-outline-warning btn-sm" onclick="document.getElementById('busca-card').scrollIntoView()">
+                        <i class="bi bi-arrow-left me-1"></i>Nova busca
+                    </button>
+                </div>
+                <div id="agendamentos-lista"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Cancelar Agendamento</h5>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja cancelar este agendamento?</p>
+                <p id="modal-cancelar-detalhes" class="text-muted small"></p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Cancelamentos só são permitidos com 2 horas de antecedência.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não, manter</button>
+                <button type="button" class="btn btn-danger" id="btn-confirmar-cancelar">Sim, cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let telefoneAtual = '';
+let agendamentoParaCancelar = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('form-busca').addEventListener('submit', buscarAgendamentos);
+    document.getElementById('btn-confirmar-cancelar').addEventListener('click', confirmarCancelamento);
+
+    // Formatar telefone
+    document.getElementById('telefone-busca').addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length <= 11) {
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        e.target.value = v;
+    });
+});
+
+async function buscarAgendamentos(e) {
+    e.preventDefault();
+    const telefone = document.getElementById('telefone-busca').value.replace(/\D/g, '');
+    if (telefone.length < 10) return alert('Digite um telefone válido');
+
+    telefoneAtual = telefone;
+    const container = document.getElementById('agendamentos-lista');
+    container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-warning"></div><p class="mt-2">Buscando...</p></div>';
+    document.getElementById('agendamentos-container').classList.remove('d-none');
+
+    try {
+        const resp = await axios.get(`/publico/agendamentos?telefone=${telefone}`);
+        const agendamentos = resp.data;
+
+        if (agendamentos.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center py-4">Nenhum agendamento encontrado para este telefone</p>';
+            return;
+        }
+
+        renderizarAgendamentos(agendamentos);
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = '<p class="text-danger text-center py-4">Erro ao buscar agendamentos</p>';
+    }
+}
+
+function renderizarAgendamentos(agendamentos) {
+    const container = document.getElementById('agendamentos-lista');
+    const agora = new Date();
+
+    let html = '';
+    agendamentos.forEach(ag => {
+        const dataAg = new Date(ag.data_hora);
+        const jaPassou = dataAg < agora;
+        const podeCancelar = !jaPassou && ['pendente', 'confirmado'].includes(ag.status);
+
+        const statusClass = {
+            'pendente': 'warning',
+            'confirmado': 'success',
+            'em_andamento': 'primary',
+            'concluido': 'secondary',
+            'cancelado': 'danger',
+            'nao_compareceu': 'dark'
+        }[ag.status] || 'secondary';
+
+        const statusLabel = {
+            'pendente': 'Pendente',
+            'confirmado': 'Confirmado',
+            'em_andamento': 'Em andamento',
+            'concluido': 'Concluído',
+            'cancelado': 'Cancelado',
+            'nao_compareceu': 'Não compareceu'
+        }[ag.status] || ag.status;
+
+        html += `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <span class="badge bg-${statusClass} fs-6">${statusLabel}</span>
+                                <h5 class="mb-0">${ag.servico}</h5>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="bi bi-calendar me-1"></i>${dataAg.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })} às
+                                <i class="bi bi-clock ms-2 me-1"></i>${dataAg.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="fw-bold text-warning fs-5 mb-1">R$ ${ag.preco.toFixed(2).replace('.', ',')}</div>
+                            ${podeCancelar ? `
+                                <button class="btn btn-outline-danger btn-sm" onclick="abrirModalCancelar(${ag.id}, '${ag.servico}', '${dataAg.toLocaleString('pt-BR')}')">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function abrirModalCancelar(id, servico, dataHora) {
+    agendamentoParaCancelar = id;
+    document.getElementById('modal-cancelar-detalhes').textContent = `${servico} - ${dataHora}`;
+    new bootstrap.Modal(document.getElementById('modalCancelar')).show();
+}
+
+async function confirmarCancelamento() {
+    if (!agendamentoParaCancelar) return;
+
+    const btn = document.getElementById('btn-confirmar-cancelar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelando...';
+
+    try {
+        await axios.delete(`/publico/agendamento/${agendamentoParaCancelar}`, {
+            params: { telefone: telefoneAtual }
+        });
+        bootstrap.Modal.getInstance(document.getElementById('modalCancelar')).hide();
+        await buscarAgendamentos({ preventDefault: () => {} });
+    } catch (error) {
+        alert(error.response?.data?.detail || 'Erro ao cancelar agendamento');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Sim, cancelar';
+        agendamentoParaCancelar = null;
+    }
+}
+</script>
+{% endblock %}

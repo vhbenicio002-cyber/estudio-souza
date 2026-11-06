@@ -1,0 +1,423 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Clientes - Estúdio Souza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0"><i class="bi bi-people text-warning me-2"></i>Clientes</h1>
+    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalCliente">
+        <i class="bi bi-plus-lg me-1"></i>Novo Cliente
+    </button>
+</div>
+
+<!-- Filtros (colapsível) -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2" style="cursor:pointer" onclick="toggleFiltrosClientes()">
+        <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h6>
+        <i class="bi bi-chevron-down" id="filtros-clientes-chevron"></i>
+    </div>
+    <div class="card-body" id="filtros-clientes-body" style="display:none">
+        <form id="form-filtros" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="filtro-busca" placeholder="Buscar por nome, telefone ou email...">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="filtro-ativo">
+                    <option value="">Todos</option>
+                    <option value="true">Ativos</option>
+                    <option value="false">Inativos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search me-1"></i>Filtrar</button>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="limparFiltros()"><i class="bi bi-x-circle me-1"></i>Limpar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabela-clientes">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Fidelidade</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border text-warning"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center" id="pagination-clientes">
+            <!-- Paginação será inserida aqui -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cliente -->
+<div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalClienteTitle"><i class="bi bi-person-plus me-2"></i>Novo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formCliente">
+                <div class="modal-body">
+                    <input type="hidden" id="cliente-id" name="id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="cliente-nome" name="nome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone *</label>
+                            <input type="tel" class="form-control" id="cliente-telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="cliente-email" name="email" placeholder="cliente@email.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="cliente-nascimento" name="data_nascimento">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Como conheceu</label>
+                            <select class="form-select" id="cliente-como-conheceu" name="como_conheceu">
+                                <option value="">Selecione...</option>
+                                <option value="indicacao">Indicação</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="google">Google Maps</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="passando">Passando na frente</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" id="cliente-observacoes" name="observacoes" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold" id="btn-salvar-cliente">
+                        <i class="bi bi-save me-1"></i>Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Fidelidade -->
+<div class="modal fade" id="modalFidelidade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-award me-2"></i>Fidelidade</h5>
+            </div>
+            <div class="modal-body text-center" id="modalFidelidadeBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Arquivar Cliente -->
+<div class="modal fade" id="modalExcluirCliente" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white"><i class="bi bi-archive me-2"></i>Arquivar Cliente</h5>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja arquivar este cliente?</p>
+                <p class="text-danger"><strong>Atenção:</strong> O cadastro e o histórico serão preservados. Você poderá reativar o cliente depois.</p>
+                <p id="excluir-cliente-nome" class="fw-bold"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger fw-bold" onclick="confirmarExcluirCliente()">
+                    <i class="bi bi-archive me-1"></i>Sim, Arquivar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+const pageSize = 20;
+let clienteParaExcluir = null;
+let clienteFidelidadeAtual = null;
+let filtrosClientesAbertos = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    carregarClientes();
+    const formFiltros = document.getElementById('form-filtros');
+    formFiltros.addEventListener('submit', (e) => {
+        e.preventDefault();
+        currentPage = 1;
+        carregarClientes();
+    });
+    // Change individual nos filtros
+    ['filtro-busca', 'filtro-ativo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => { currentPage = 1; carregarClientes(); });
+        if (el) el.addEventListener('change', () => { currentPage = 1; carregarClientes(); });
+    });
+
+    document.getElementById('formCliente').addEventListener('submit', salvarCliente);
+    document.getElementById('modalCliente').addEventListener('hidden.bs.modal', limparFormCliente);
+
+    // Formatar telefone
+    document.getElementById('cliente-telefone').addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length <= 11) {
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        e.target.value = v;
+    });
+});
+
+function toggleFiltrosClientes() {
+    const body = document.getElementById('filtros-clientes-body');
+    const chevron = document.getElementById('filtros-clientes-chevron');
+    filtrosClientesAbertos = !filtrosClientesAbertos;
+    body.style.display = filtrosClientesAbertos ? 'block' : 'none';
+    chevron.style.transform = filtrosClientesAbertos ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+async function carregarClientes() {
+    const busca = document.getElementById('filtro-busca').value;
+    const ativo = document.getElementById('filtro-ativo').value;
+
+    try {
+        const params = new URLSearchParams({
+            skip: (currentPage - 1) * pageSize,
+            limit: pageSize
+        });
+        if (busca) params.append('busca', busca);
+        if (ativo) params.append('ativo', ativo);
+
+        const resp = await AdminUtils.api.get(`/clientes/?${params.toString()}`);
+        renderizarTabela(resp);
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        AdminUtils.showToast('Erro ao carregar clientes', 'danger');
+    }
+}
+
+function renderizarTabela(clientes) {
+    const tbody = document.querySelector('#tabela-clientes tbody');
+
+    if (clientes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Nenhum cliente encontrado</td></tr>';
+        return;
+    }
+
+    let html = '';
+    clientes.forEach(c => {
+        const fidelidade = c.fidelidade ? `${c.fidelidade.pontos_atual} pts (${c.fidelidade.nivel})` : 'Não cadastrado';
+        html += `
+            <tr>
+                <td><strong>${c.nome}</strong></td>
+                <td>${c.telefone}</td>
+                <td>${c.email || '<span class="text-muted">-</span>'}</td>
+                <td>
+                    <span class="badge bg-warning text-dark" style="cursor:pointer" onclick="verFidelidade(${c.id})">
+                        ${fidelidade}
+                    </span>
+                </td>
+                <td class="text-center">
+                    ${c.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editarCliente(${c.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-outline-success" onclick="verFidelidade(${c.id})" title="Fidelidade"><i class="bi bi-award"></i></button>
+                        <button class="btn btn-outline-${c.ativo ? 'warning' : 'success'}" onclick="toggleCliente(${c.id}, ${!c.ativo})" title="${c.ativo ? 'Desativar' : 'Ativar'}">
+                            <i class="bi bi-${c.ativo ? 'person-x' : 'person-check'}"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="abrirExcluirCliente(${c.id}, '${c.nome}')" title="Arquivar cliente"><i class="bi bi-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+function limparFormCliente() {
+    document.getElementById('formCliente').reset();
+    document.getElementById('cliente-id').value = '';
+    document.getElementById('modalClienteTitle').innerHTML = '<i class="bi bi-person-plus me-2"></i>Novo Cliente';
+}
+
+function editarCliente(id) {
+    // Buscar dados do cliente
+    AdminUtils.api.get(`/clientes/${id}`).then(c => {
+        document.getElementById('cliente-id').value = c.id;
+        document.getElementById('cliente-nome').value = c.nome;
+        document.getElementById('cliente-telefone').value = c.telefone;
+        document.getElementById('cliente-email').value = c.email || '';
+        document.getElementById('cliente-nascimento').value = c.data_nascimento ? c.data_nascimento.split('T')[0] : '';
+        document.getElementById('cliente-como-conheceu').value = c.como_conheceu || '';
+        document.getElementById('cliente-observacoes').value = c.observacoes || '';
+        document.getElementById('modalClienteTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Cliente';
+        new bootstrap.Modal(document.getElementById('modalCliente')).show();
+    }).catch(err => {
+        console.error('Erro ao carregar cliente:', err);
+        AdminUtils.showToast(err.response?.data?.detail || err.message || 'Erro ao carregar cliente', 'danger');
+    });
+}
+
+async function salvarCliente(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-salvar-cliente');
+    AdminUtils.setLoading(btn, true);
+
+    const id = document.getElementById('cliente-id').value;
+    const data = {
+        nome: document.getElementById('cliente-nome').value,
+        telefone: document.getElementById('cliente-telefone').value.replace(/\D/g, ''),
+        email: document.getElementById('cliente-email').value || null,
+        data_nascimento: document.getElementById('cliente-nascimento').value || null,
+        como_conheceu: document.getElementById('cliente-como-conheceu').value || null,
+        observacoes: document.getElementById('cliente-observacoes').value || null,
+    };
+
+    try {
+        if (id) {
+            await AdminUtils.api.put(`/clientes/${id}`, data);
+            AdminUtils.showToast('Cliente atualizado com sucesso');
+        } else {
+            await AdminUtils.api.post('/clientes/', data);
+            AdminUtils.showToast('Cliente criado com sucesso');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('modalCliente')).hide();
+        carregarClientes();
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao salvar cliente', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+async function toggleCliente(id, ativo) {
+    if (!confirm(`Tem certeza que deseja ${ativo ? 'ativar' : 'desativar'} este cliente?`)) return;
+
+    try {
+        await AdminUtils.api.put(`/clientes/${id}`, { ativo });
+        AdminUtils.showToast(`Cliente ${ativo ? 'ativado' : 'desativado'} com sucesso`);
+        carregarClientes();
+    } catch (error) {
+        AdminUtils.showToast('Erro ao alterar status', 'danger');
+    }
+}
+
+function abrirExcluirCliente(id, nome) {
+    clienteParaExcluir = id;
+    document.getElementById('excluir-cliente-nome').textContent = nome;
+    new bootstrap.Modal(document.getElementById('modalExcluirCliente')).show();
+}
+
+async function confirmarExcluirCliente() {
+    if (!clienteParaExcluir) return;
+
+    try {
+        await AdminUtils.api.delete(`/clientes/${clienteParaExcluir}`);
+        AdminUtils.showToast('Cliente arquivado com sucesso');
+        bootstrap.Modal.getInstance(document.getElementById('modalExcluirCliente')).hide();
+        carregarClientes();
+    } catch (error) {
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao arquivar cliente', 'danger');
+    }
+}
+
+async function verFidelidade(clienteId) {
+    clienteFidelidadeAtual = clienteId;
+    try {
+        const resp = await AdminUtils.api.get(`/fidelidade/cliente/${clienteId}`);
+        const f = resp;
+
+        let html = `
+            <div class="row text-center mb-3">
+                <div class="col-4">
+                    <div class="fs-2 fw-bold text-warning">${f.pontos_atual}</div>
+                    <small class="text-muted">Pontos Atuais</small>
+                </div>
+                <div class="col-4">
+                    <div class="fs-2 fw-bold text-success">${f.pontos_total_ganho}</div>
+                    <small class="text-muted">Total Ganho</small>
+                </div>
+                <div class="col-4">
+                    <div class="fs-2 fw-bold text-info">${f.nivel.toUpperCase()}</div>
+                    <small class="text-muted">Nível</small>
+                </div>
+            </div>
+            <hr>
+            <div class="text-start">
+                <h6>Extrato Recente</h6>
+        `;
+
+        const extrato = await AdminUtils.api.get(`/fidelidade/cliente/${clienteId}/extrato`);
+        if (extrato.length === 0) {
+            html += '<p class="text-muted text-center py-3">Nenhuma movimentação</p>';
+        } else {
+            html += '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead><tr><th>Data</th><th>Tipo</th><th class="text-end">Pontos</th><th>Descrição</th></tr></thead><tbody>';
+            extrato.forEach(t => {
+                const cor = t.tipo === 'ganho' ? 'success' : 'danger';
+                const sinal = t.tipo === 'ganho' ? '+' : '';
+                html += `
+                    <tr>
+                        <td>${AdminUtils.formatarData(t.criado_em)}</td>
+                        <td><span class="badge bg-${cor}">${t.tipo}</span></td>
+                        <td class="text-end fw-bold text-${cor}">${sinal}${t.pontos}</td>
+                        <td>${t.descricao || '-'}</td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+
+        document.getElementById('modalFidelidadeBody').innerHTML = html;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFidelidade')).show();
+    } catch (error) {
+        console.error('Erro ao carregar fidelidade:', error);
+        AdminUtils.showToast(error.response?.data?.detail || 'Erro ao carregar fidelidade', 'danger');
+    }
+}
+
+function limparFiltros() {
+    document.getElementById('filtro-busca').value = '';
+    document.getElementById('filtro-ativo').value = '';
+    currentPage = 1;
+    carregarClientes();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,362 @@
+/* Admin Layout */
+.sidebar {
+    min-height: calc(100vh - 56px);
+    background: #fff;
+    border-right: 1px solid #e9ecef;
+    position: sticky;
+    top: 56px;
+}
+
+.sidebar .nav-link {
+    color: #495057;
+    padding: 0.875rem 1.5rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.sidebar .nav-link:hover {
+    background: #fff8e1;
+    color: #ffc107;
+    border-left-color: #ffc107;
+}
+
+.sidebar .nav-link.active {
+    background: #fff8e1;
+    color: #ffc107;
+    border-left-color: #ffc107;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* Tables */
+.table th {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background: #fff8e1;
+}
+
+/* Cards */
+.card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.625rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255,193,7,0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.375rem;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+    border-color: #e0a800;
+    color: #000;
+}
+
+.btn-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+    border-radius: 8px;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+}
+
+.modal-header {
+    border-radius: 16px 16px 0 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 56px; /* Altura do navbar */
+        left: -280px;
+        width: 280px;
+        height: calc(100vh - 56px);
+        z-index: 1040; /* Abaixo do navbar (1050) */
+        transition: left 0.3s;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        overflow-y: auto;
+    }
+    .sidebar.show {
+        left: 0;
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 1rem 0.5rem;
+    }
+
+    /* Container full width no mobile */
+    .container-fluid.mt-5.pt-3 {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .container-fluid.mt-5.pt-3 > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Cards empilhados no mobile */
+    .stat-card .card-body {
+        padding: 1rem;
+    }
+    .stat-card h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Tabela com scroll horizontal */
+    .table-responsive {
+        border: none;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table {
+        min-width: 700px;
+        white-space: nowrap;
+    }
+
+    /* Formulários empilhados */
+    .modal-body .row.g-3 > div {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Filtros em coluna única */
+    #form-filtros .col-md-3,
+    #form-filtros .col-md-4,
+    #form-filtros .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Botões de ação na tabela */
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    /* Header cards */
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Navbar z-index acima do sidebar */
+    .navbar.fixed-top {
+        z-index: 1050 !important;
+    }
+}
+
+/* Botão toggle sidebar no mobile */
+.sidebar-toggle {
+    display: none;
+}
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #ffc107;
+        border: none;
+        border-radius: 8px;
+        color: #000;
+    }
+}
+
+/* Melhorias gerais */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Overlay quando sidebar aberto no mobile */
+@media (max-width: 768px) {
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 56px);
+        background: rgba(0,0,0,0.5);
+        z-index: 1035;
+    }
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+
+/* Login Page */
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 20px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #e0a800;
+}
+/* Tema administrativo: rosé, nude e ameixa */
+:root { --beauty-rose:#b76e79; --beauty-dark:#563b46; --beauty-blush:#f8e9ec; }
+body { background:#fffafb; color:#563b46; }
+.beauty-admin-nav { background:#fff !important; border-bottom:1px solid #f0e2e6; box-shadow:0 2px 14px rgba(86,59,70,.06); }
+.beauty-admin-nav .navbar-brand, .beauty-admin-nav .nav-link { color:#563b46 !important; }
+.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#f8e9ec; color:#985461; border-left-color:#b76e79; }
+.form-control:focus, .form-select:focus { border-color:#b76e79; box-shadow:0 0 0 3px rgba(183,110,121,.15); }
+.btn-warning { background:#b76e79; border-color:#b76e79; color:#fff; }
+.btn-warning:hover { background:#985461; border-color:#985461; color:#fff; }
+.text-warning { color:#b76e79 !important; }
+
+
+/* Cabeçalho compacto e alinhado em todas as larguras */
+.beauty-admin-nav {
+    min-height: 52px;
+    height: 52px;
+    padding: 0 0.75rem !important;
+}
+.beauty-admin-nav > .container-fluid {
+    min-height: 52px;
+    height: 52px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start !important;
+    align-items: center;
+}
+.beauty-admin-nav .navbar-brand {
+    margin-right: auto;
+    padding: 0;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+.beauty-admin-nav .navbar-brand img {
+    width: 30px !important;
+    height: 30px !important;
+}
+.beauty-admin-nav .navbar-nav {
+    margin-left: auto !important;
+    flex-direction: row;
+    align-items: center;
+}
+.beauty-admin-nav .nav-link {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.9rem;
+}
+@media (max-width: 768px) {
+    .beauty-admin-nav { min-height: 50px; height: 50px; }
+    .beauty-admin-nav > .container-fluid { min-height: 50px; height: 50px; padding-left: .5rem; padding-right: .5rem; }
+    .beauty-admin-nav .navbar-brand { font-size: .88rem; gap: .35rem !important; }
+    .beauty-admin-nav .navbar-brand img { width: 28px !important; height: 28px !important; }
+    .beauty-admin-nav .navbar-brand .badge { margin-left: .15rem !important; font-size: .62rem; }
+}
+
+
+/* Espaço consistente abaixo do cabeçalho fixo do painel */
+.admin-page-container {
+    margin-top: 0 !important;
+    padding-top: 5.5rem !important;
+}
+@media (max-width: 768px) {
+    .admin-page-container {
+        padding-top: 5.25rem !important;
+    }
+}

@@ -1,0 +1,283 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Estúdio Souza Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard</h1>
+    <div class="text-muted small">
+        <i class="bi bi-calendar me-1"></i><span id="data-atual"></span>
+    </div>
+</div>
+
+<!-- Cards Resumo -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Agendamentos Hoje</p>
+                        <h2 class="mb-0 fw-bold" id="stat-agendamentos-hoje">-</h2>
+                    </div>
+                    <i class="bi bi-calendar-check fs-1 text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Agendamentos Esta Semana</p>
+                        <h2 class="mb-0 fw-bold" id="stat-agendamentos-semana">-</h2>
+                    </div>
+                    <i class="bi bi-calendar-week fs-1 text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Faturamento Hoje</p>
+                        <h2 class="mb-0 fw-bold text-success" id="stat-faturamento-hoje">-</h2>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 text-success opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Faturamento Mês</p>
+                        <h2 class="mb-0 fw-bold text-success" id="stat-faturamento-mes">-</h2>
+                    </div>
+                    <i class="bi bi-graph-up fs-1 text-success opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Segunda linha de cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Total Clientes</p>
+                        <h2 class="mb-0 fw-bold" id="stat-total-clientes">-</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Novos Clientes (Mês)</p>
+                        <h2 class="mb-0 fw-bold" id="stat-novos-clientes">-</h2>
+                    </div>
+                    <i class="bi bi-person-plus fs-1 text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Pendentes</p>
+                        <h2 class="mb-0 fw-bold text-primary" id="stat-pendentes">-</h2>
+                    </div>
+                    <i class="bi bi-hourglass-split fs-1 text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">Confirmados</p>
+                        <h2 class="mb-0 fw-bold text-success" id="stat-confirmados">-</h2>
+                    </div>
+                    <i class="bi bi-check-circle fs-1 text-success opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos e Próximos Agendamentos -->
+<div class="row g-4">
+    <!-- Próximos Agendamentos -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Próximos Agendamentos</h5>
+                <a href="/admin/agendamentos" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            </div>
+            <div class="card-body p-0" id="proximos-agendamentos">
+                <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Serviços Populares -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-award text-primary me-2"></i>Serviços Mais Populares (Mês)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chart-servicos" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // Data atual
+    document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR', {
+        weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+
+    await carregarDashboard();
+});
+
+async function carregarDashboard() {
+    try {
+        const resp = await axios.get('/admin/api/dashboard');
+        const data = resp.data;
+
+        // Atualizar cards
+        document.getElementById('stat-agendamentos-hoje').textContent = data.resumo.agendamentos_hoje;
+        document.getElementById('stat-agendamentos-semana').textContent = data.resumo.agendamentos_semana;
+        document.getElementById('stat-faturamento-hoje').textContent = formatarMoeda(data.resumo.faturamento_hoje);
+        document.getElementById('stat-faturamento-mes').textContent = formatarMoeda(data.resumo.faturamento_mes);
+        document.getElementById('stat-total-clientes').textContent = data.resumo.total_clientes;
+        document.getElementById('stat-novos-clientes').textContent = data.resumo.novos_clientes_mes;
+
+        // Próximos agendamentos
+        renderizarProximosAgendamentos(data.proximos_agendamentos);
+
+        // Gráfico serviços
+        renderizarChartServicos(data.servicos_populares);
+
+
+        // Contar pendentes/confirmados dos próximos
+        const pendentes = data.proximos_agendamentos.filter(a => a.status === 'pendente').length;
+        const confirmados = data.proximos_agendamentos.filter(a => a.status === 'confirmado').length;
+        document.getElementById('stat-pendentes').textContent = pendentes;
+        document.getElementById('stat-confirmados').textContent = confirmados;
+    } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+    }
+}
+
+function renderizarProximosAgendamentos(agendamentos) {
+    const container = document.getElementById('proximos-agendamentos');
+
+    if (agendamentos.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-muted">Nenhum agendamento futuro</div>';
+        return;
+    }
+
+    let html = '<div class="list-group list-group-flush">';
+    agendamentos.forEach(ag => {
+        const data = new Date(ag.data_hora);
+        const statusClass = {
+            'pendente': 'warning',
+            'confirmado': 'success',
+            'em_andamento': 'primary',
+            'concluido': 'secondary',
+            'cancelado': 'danger',
+            'nao_compareceu': 'dark'
+        }[ag.status] || 'secondary';
+
+        const statusLabel = {
+            'pendente': 'Pendente',
+            'confirmado': 'Confirmado',
+            'em_andamento': 'Em andamento',
+            'concluido': 'Concluído',
+            'cancelado': 'Cancelado',
+            'nao_compareceu': 'Não compareceu'
+        }[ag.status] || ag.status;
+
+        html += `
+            <a href="#" class="list-group-item list-group-item-action px-3 py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-${statusClass}">${statusLabel}</span>
+                            <strong>${ag.cliente}</strong>
+                        </div>
+                        <small class="text-muted">
+                            ${ag.servico} • ${data.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })} às ${data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            
+                        </small>
+                    </div>
+                    <span class="fw-bold text-primary">R$ ${ag.preco?.toFixed(2).replace('.', ',') || '0,00'}</span>
+                </div>
+            </a>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderizarChartServicos(servicos) {
+    const ctx = document.getElementById('chart-servicos').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: servicos.map(s => s.servico),
+            datasets: [{
+                data: servicos.map(s => s.total),
+                backgroundColor: [
+                    '#ffc107', '#198754', '#0d6efd', '#dc3545', '#6f42c1',
+                    '#fd7e14', '#20c997', '#6c757d'
+                ],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.label}: ${ctx.raw} agendamentos`
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+
+function formatarMoeda(valor) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+}
+</script>
+{% endblock %}

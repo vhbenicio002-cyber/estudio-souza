@@ -1,0 +1,20 @@
+/* Estilos das páginas públicas do Estúdio Souza */
+:root { color-scheme: light; }
+body { min-height: 100vh; background: #f8f9fa; color: #212529; }
+.navbar-brand { letter-spacing: .02em; }
+.card { border-radius: .85rem; }
+.btn { border-radius: .55rem; }
+.form-control, .form-select { min-height: 44px; }
+
+/* Identidade visual do ateliê de beleza */
+:root { --beauty-rose:#b76e79; --beauty-rose-dark:#985461; --beauty-blush:#f8e9ec; --beauty-ink:#563b46; }
+body { background:#fffafb; color:var(--beauty-ink); }
+.card { border-radius:1.1rem; }
+.btn-warning { background:var(--beauty-rose); border-color:var(--beauty-rose); color:#fff; }
+.btn-warning:hover { background:var(--beauty-rose-dark); border-color:var(--beauty-rose-dark); color:#fff; }
+.text-warning { color:var(--beauty-rose) !important; }
+.hero-section { background:linear-gradient(135deg,#f8e9ec,#f4e8f0); color:var(--beauty-ink) !important; }
+
+/* Marca Ruth Souza / Estúdio Souza */
+.brand-logo { flex:0 0 auto; }
+.hero-logo { display:block; margin-left:auto; margin-right:auto; }

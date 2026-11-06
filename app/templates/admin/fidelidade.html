@@ -1,0 +1,332 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Fidelidade - Estúdio Souza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0"><i class="bi bi-award text-warning me-2"></i>Programa de Fidelidade</h1>
+</div>
+
+<!-- Cards Resumo -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Total Clientes Fidelidade</p>
+                        <h2 class="mb-0 fw-bold" id="stat-total-fidelidade">-</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 text-warning opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Pontos Totais em Circulação</p>
+                        <h2 class="mb-0 fw-bold" id="stat-pontos-circulacao">-</h2>
+                    </div>
+                    <i class="bi bi-coin fs-1 text-warning opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Serviços Grátis Resgatados</p>
+                        <h2 class="mb-0 fw-bold" id="stat-cortes-gratis">-</h2>
+                    </div>
+                    <i class="bi bi-gift fs-1 text-success opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Resgates Este Mês</p>
+                        <h2 class="mb-0 fw-bold" id="stat-resgates-mes">-</h2>
+                    </div>
+                    <i class="bi bi-arrow-down-circle fs-1 text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ranking -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-trophy text-warning me-2"></i>Ranking de Fidelidade</h5>
+    </div>
+
+    <!-- Filtros (colapsível) -->
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2" style="cursor:pointer" onclick="toggleFiltrosFidelidade()">
+        <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtros</h6>
+        <i class="bi bi-chevron-down" id="filtros-fidelidade-chevron"></i>
+    </div>
+    <div class="card-body" id="filtros-fidelidade-body" style="display:none">
+        <form id="form-filtros" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="filtro-busca" placeholder="Buscar por nome ou telefone...">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="filtro-nivel">
+                    <option value="">Todos os níveis</option>
+                    <option value="bronze">Bronze</option>
+                    <option value="prata">Prata</option>
+                    <option value="ouro">Ouro</option>
+                    <option value="diamante">Diamante</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search me-1"></i>Filtrar</button>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="limparFiltrosFidelidade()"><i class="bi bi-x-circle me-1"></i>Limpar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabela-ranking">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Cliente</th>
+                        <th>Telefone</th>
+                        <th class="text-center">Nível</th>
+                        <th class="text-center">Pontos Atuais</th>
+                        <th class="text-center">Total Ganho</th>
+                        <th class="text-center">Total Resgatado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="text-center py-4"><div class="spinner-border text-warning"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Cadastro de produtos e pontuação por compra -->
+<div class="card border-0 shadow-sm my-3">
+    <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-bag-heart text-warning me-2"></i>Produtos e Pontos</h5></div>
+    <div class="card-body">
+        <form id="formProduto" class="row g-2 align-items-end mb-3">
+            <input type="hidden" id="produto-id">
+            <div class="col-md-4"><label class="form-label">Nome do produto</label><input id="produto-nome" class="form-control" required maxlength="120"></div>
+            <div class="col-md-2"><label class="form-label">Preço (R$)</label><input id="produto-preco" type="number" class="form-control" min="0" step="0.01" value="0" required><small id="produto-pontos-preview" class="text-muted d-block mt-1">10 pontos por unidade · resgate: 120 pontos</small></div>
+            <div class="col-md-6"><label class="form-label">Descrição</label><input id="produto-descricao" class="form-control" maxlength="500"></div>
+            <div class="col-12"><small class="text-muted d-block mb-2">Pontuação automática pelo preço: até R$ 30 = 10 pontos; acima de R$ 30 até R$ 50 = 15; acima de R$ 50 = 20 pontos por unidade.</small><button class="btn btn-warning" type="submit">Salvar produto</button> <button class="btn btn-outline-secondary" type="button" onclick="limparProduto()">Limpar</button></div>
+        </form>
+        <div class="table-responsive"><table class="table table-sm" id="tabela-produtos"><thead><tr><th>Produto</th><th>Preço</th><th>Pontos por compra / resgate</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr><td colspan="5">Carregando...</td></tr></tbody></table></div>
+    </div>
+</div>
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white"><h5 class="mb-0">Registrar compra de produto para um cliente</h5></div>
+    <div class="card-body">
+        <form id="formCompraProduto" class="row g-2 align-items-end">
+            <div class="col-md-4"><label class="form-label">Cliente</label><select id="compra-cliente" class="form-select" required><option value="">Carregando clientes...</option></select></div>
+            <div class="col-md-4"><label class="form-label">Produto</label><select id="compra-produto" class="form-select" required><option value="">Selecione...</option></select></div>
+            <div class="col-md-2"><label class="form-label">Quantidade</label><input id="compra-quantidade" class="form-control" type="number" min="1" max="100" value="1" required></div>
+            <div class="col-md-2"><button class="btn btn-success w-100" type="submit">Registrar compra</button></div>
+        </form>
+        <small class="text-muted d-block mt-2">Os pontos são creditados no histórico do cliente somente quando a compra for registrada aqui.</small>
+    </div>
+</div>
+
+<!-- Configurações Fidelidade -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-gear text-warning me-2"></i>Configurações do Programa</h5>
+    </div>
+    <div class="card-body">
+        <form id="formConfigFidelidade" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Pontos por R$ 1,00</label>
+                <input type="number" class="form-control" id="cfg-pontos-por-real" name="pontos_por_real" min="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Pontos para Serviço Grátis</label>
+                <input type="number" class="form-control" id="cfg-pontos-corte-gratis" name="pontos_corte_gratis" min="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nível Prata (pts)</label>
+                <input type="number" class="form-control" id="cfg-nivel-prata" name="nivel_prata_pontos" min="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nível Ouro (pts)</label>
+                <input type="number" class="form-control" id="cfg-nivel-ouro" name="nivel_ouro_pontos" min="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nível Diamante (pts)</label>
+                <input type="number" class="form-control" id="cfg-nivel-diamante" name="nivel_diamante_pontos" min="1" required>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-warning fw-bold"><i class="bi bi-save me-1"></i>Salvar Configurações</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let filtrosFidelidadeAbertos = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    carregarFidelidade();
+    carregarConfigFidelidade();
+    document.getElementById('formConfigFidelidade').addEventListener('submit', salvarConfigFidelidade);
+
+    // Filtros
+    const formFiltros = document.getElementById('form-filtros');
+    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); carregarFidelidade(); });
+    ['filtro-busca', 'filtro-nivel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => carregarFidelidade());
+        if (el) el.addEventListener('change', () => carregarFidelidade());
+    });
+});
+
+function toggleFiltrosFidelidade() {
+    const body = document.getElementById('filtros-fidelidade-body');
+    const chevron = document.getElementById('filtros-fidelidade-chevron');
+    filtrosFidelidadeAbertos = !filtrosFidelidadeAbertos;
+    body.style.display = filtrosFidelidadeAbertos ? 'block' : 'none';
+    chevron.style.transform = filtrosFidelidadeAbertos ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+async function carregarFidelidade() {
+    try {
+        const busca = document.getElementById('filtro-busca').value;
+        const nivel = document.getElementById('filtro-nivel').value;
+
+        const params = new URLSearchParams({ limite: 100 });
+        if (busca) params.append('busca', busca);
+        if (nivel) params.append('nivel', nivel);
+
+        const [ranking, stats] = await Promise.all([
+            AdminUtils.api.get(`/fidelidade/ranking?${params.toString()}`),
+            AdminUtils.api.get('/admin/dashboard')
+        ]);
+
+        renderizarRanking(ranking);
+    } catch (error) {
+        console.error('Erro ao carregar fidelidade:', error);
+    }
+}
+
+function renderizarRanking(ranking) {
+    const tbody = document.querySelector('#tabela-ranking tbody');
+
+    if (ranking.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum cliente no programa</td></tr>';
+        return;
+    }
+
+    let html = '';
+    ranking.forEach((c, i) => {
+        const nivelClass = {
+            'bronze': 'secondary',
+            'prata': 'info',
+            'ouro': 'warning',
+            'diamante': 'danger'
+        }[c.nivel] || 'secondary';
+
+        html += `
+            <tr>
+                <td><strong>${i + 1}</strong></td>
+                <td><strong>${c.nome}</strong></td>
+                <td>${c.telefone}</td>
+                <td class="text-center"><span class="badge bg-${nivelClass}">${c.nivel.toUpperCase()}</span></td>
+                <td class="text-center fw-bold text-warning">${c.pontos_atual}</td>
+                <td class="text-center fw-bold text-success">${c.pontos_total}</td>
+                <td class="text-center text-muted">${c.pontos_total - c.pontos_atual}</td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+async function carregarConfigFidelidade() {
+    try {
+        const resp = await AdminUtils.api.get('/configuracao/');
+        document.getElementById('cfg-pontos-por-real').value = resp.pontos_por_real;
+        document.getElementById('cfg-pontos-corte-gratis').value = resp.pontos_corte_gratis;
+        document.getElementById('cfg-nivel-prata').value = resp.nivel_prata_pontos;
+        document.getElementById('cfg-nivel-ouro').value = resp.nivel_ouro_pontos;
+        document.getElementById('cfg-nivel-diamante').value = resp.nivel_diamante_pontos;
+    } catch (error) {
+        console.error('Erro ao carregar config:', error);
+    }
+}
+
+async function salvarConfigFidelidade(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    AdminUtils.setLoading(btn, true);
+
+    const data = {
+        pontos_por_real: parseInt(document.getElementById('cfg-pontos-por-real').value),
+        pontos_corte_gratis: parseInt(document.getElementById('cfg-pontos-corte-gratis').value),
+        nivel_prata_pontos: parseInt(document.getElementById('cfg-nivel-prata').value),
+        nivel_ouro_pontos: parseInt(document.getElementById('cfg-nivel-ouro').value),
+        nivel_diamante_pontos: parseInt(document.getElementById('cfg-nivel-diamante').value),
+    };
+
+    try {
+        await AdminUtils.api.put('/configuracao/', data);
+        AdminUtils.showToast('Configurações salvas');
+    } catch (error) {
+        AdminUtils.showToast('Erro ao salvar', 'danger');
+    } finally {
+        AdminUtils.setLoading(btn, false);
+    }
+}
+
+function limparFiltrosFidelidade() {
+    document.getElementById('filtro-busca').value = '';
+    document.getElementById('filtro-nivel').value = '';
+    carregarFidelidade();
+}
+
+let produtosCache = [];
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('formProduto').addEventListener('submit', salvarProduto);
+    document.getElementById('produto-preco').addEventListener('input', atualizarPreviewPontosProduto);
+    document.getElementById('formCompraProduto').addEventListener('submit', registrarCompraProduto);
+    carregarProdutosFidelidade();
+});
+async function carregarProdutosFidelidade() {
+    try {
+        const [produtos, clientes] = await Promise.all([AdminUtils.api.get('/produtos/'), AdminUtils.api.get('/clientes/?limit=500&ativo=true')]);
+        produtosCache = produtos;
+        document.querySelector('#tabela-produtos tbody').innerHTML = produtos.length ? produtos.map(p => `<tr><td>${escapeHtml(p.nome)}</td><td>R$ ${Number(p.preco).toFixed(2)}</td><td>${p.pontos_por_compra} pontos (resgate: ${p.pontos_resgate})</td><td>${p.ativo ? 'Ativo' : 'Inativo'}</td><td><button class="btn btn-sm btn-outline-primary" onclick="editarProduto(${p.id})">Editar</button> <button class="btn btn-sm btn-outline-secondary" onclick="alternarProduto(${p.id},${!p.ativo})">${p.ativo ? 'Inativar' : 'Ativar'}</button></td></tr>`).join('') : '<tr><td colspan="5" class="text-muted">Nenhum produto cadastrado.</td></tr>';
+        document.getElementById('compra-produto').innerHTML = '<option value="">Selecione...</option>' + produtos.filter(p=>p.ativo).map(p=>`<option value="${p.id}">${escapeHtml(p.nome)} — ${p.pontos_por_compra} pontos/un.</option>`).join('');
+        document.getElementById('compra-cliente').innerHTML = '<option value="">Selecione...</option>' + clientes.filter(c=>c.ativo).map(c=>`<option value="${c.id}">${escapeHtml(c.nome)} — ${escapeHtml(c.telefone)}</option>`).join('');
+    } catch(e) { console.error(e); AdminUtils.showToast('Erro ao carregar produtos e clientes','danger'); }
+}
+function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pontosProdutoPorPreco(preco) { const centavos = Math.round((Number(preco) || 0) * 100); return centavos <= 3000 ? 10 : (centavos <= 5000 ? 15 : 20); }
+function atualizarPreviewPontosProduto() { const preco = document.getElementById('produto-preco').value; const pontos = pontosProdutoPorPreco(preco); document.getElementById('produto-pontos-preview').textContent = `${pontos} pontos por unidade · resgate: ${pontos * 12} pontos`; }
+function limparProduto() { document.getElementById('formProduto').reset(); document.getElementById('produto-id').value=''; document.getElementById('produto-preco').value='0'; atualizarPreviewPontosProduto(); }
+function editarProduto(id) { const p=produtosCache.find(x=>x.id===id); if(!p)return; document.getElementById('produto-id').value=p.id; document.getElementById('produto-nome').value=p.nome; document.getElementById('produto-preco').value=p.preco; atualizarPreviewPontosProduto(); document.getElementById('produto-descricao').value=p.descricao||''; document.getElementById('produto-nome').focus(); }
+async function salvarProduto(e) { e.preventDefault(); const id=document.getElementById('produto-id').value; const data={nome:document.getElementById('produto-nome').value.trim(),preco:Number(document.getElementById('produto-preco').value),descricao:document.getElementById('produto-descricao').value||null}; try { if(id) await AdminUtils.api.put(`/produtos/${id}`,data); else await AdminUtils.api.post('/produtos/',data); AdminUtils.showToast('Produto salvo'); limparProduto(); carregarProdutosFidelidade(); } catch(e) { AdminUtils.showToast(e.response?.data?.detail||'Erro ao salvar produto','danger'); } }
+async function alternarProduto(id,ativo) { try { await AdminUtils.api.put(`/produtos/${id}`,{ativo}); carregarProdutosFidelidade(); } catch(e) { AdminUtils.showToast('Erro ao alterar produto','danger'); } }
+async function registrarCompraProduto(e) { e.preventDefault(); const cliente_id=Number(document.getElementById('compra-cliente').value), produto_id=Number(document.getElementById('compra-produto').value), quantidade=Number(document.getElementById('compra-quantidade').value); try { const r=await AdminUtils.api.post(`/produtos/${produto_id}/registrar-compra`,{cliente_id,quantidade}); AdminUtils.showToast(`${r.pontos_adicionados} pontos adicionados ao cliente!`); e.target.reset(); document.getElementById('compra-quantidade').value='1'; carregarFidelidade(); } catch(e) { AdminUtils.showToast(e.response?.data?.detail||'Erro ao registrar compra','danger'); } }
+</script>
+{% endblock %}

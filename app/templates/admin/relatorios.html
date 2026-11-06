@@ -1,0 +1,299 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Relatórios - Estúdio Souza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-graph-up text-warning me-2"></i>Relatórios</h1>
+</div>
+
+<!-- Filtro de Período -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form id="formPeriodo" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Data Início</label>
+                <input type="date" class="form-control" id="rel-data-inicio" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Data Fim</label>
+                <input type="date" class="form-control" id="rel-data-fim" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-warning fw-bold w-100"><i class="bi bi-search me-1"></i>Gerar Relatório</button>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="setPeriodo('hoje')">Hoje</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setPeriodo('semana')">Semana</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setPeriodo('mes')">Mês</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resumo -->
+<div class="row g-3 mb-4" id="rel-resumo" style="display: none;">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1 small">Total Agendamentos</p>
+                <h2 class="mb-0 fw-bold" id="rel-total-agendamentos">-</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1 small">Faturamento Total</p>
+                <h2 class="mb-0 fw-bold text-success" id="rel-faturamento-total">-</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1 small">Ticket Médio</p>
+                <h2 class="mb-0 fw-bold" id="rel-ticket-medio">-</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1 small">Clientes Atendidos</p>
+                <h2 class="mb-0 fw-bold" id="rel-clientes-atendidos">-</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4" id="rel-graficos" style="display: none;">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart text-warning me-2"></i>Faturamento por Dia</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chart-faturamento-dia" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-stars text-warning me-2"></i>Faturamento por Serviço</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chart-faturamento-servico" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4" id="rel-graficos2" style="display: none;">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-clock text-primary me-2"></i>Horários de maior movimento</h5></div>
+            <div class="card-body"><canvas id="chart-horarios-pico" height="300"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabelas Detalhadas -->
+<div class="row g-4" id="rel-tabelas" style="display: none;">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-list-ul text-primary me-2"></i>Resultado por serviço</h5></div>
+            <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0" id="tabela-servico-rel"><thead><tr><th>Serviço</th><th class="text-center">Qtd</th><th class="text-end">Total</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let chartDia = null, chartServico = null, chartPico = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Definir período padrão (mês atual)
+    const hoje = new Date();
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    document.getElementById('rel-data-inicio').value = formatarDataLocal(inicioMes);
+    document.getElementById('rel-data-fim').value = formatarDataLocal(hoje);
+
+    document.getElementById('formPeriodo').addEventListener('submit', (e) => {
+        e.preventDefault();
+        gerarRelatorio();
+    });
+
+    gerarRelatorio();
+});
+
+function formatarDataLocal(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+function setPeriodo(tipo) {
+    const hoje = new Date();
+    let inicio, fim;
+
+    if (tipo === 'hoje') {
+        inicio = fim = hoje;
+    } else if (tipo === 'semana') {
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - hoje.getDay() + 1);
+        fim = new Date(inicio);
+        fim.setDate(inicio.getDate() + 6);
+    } else if (tipo === 'mes') {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    }
+
+    document.getElementById('rel-data-inicio').value = formatarDataLocal(inicio);
+    document.getElementById('rel-data-fim').value = formatarDataLocal(fim);
+    gerarRelatorio();
+}
+
+async function gerarRelatorio() {
+    const inicio = document.getElementById('rel-data-inicio').value;
+    const fim = document.getElementById('rel-data-fim').value;
+
+    if (!inicio || !fim) return;
+    if (inicio > fim) {
+        AdminUtils.showToast('A data inicial não pode ser posterior à data final', 'warning');
+        return;
+    }
+
+    try {
+        const [faturamento, horarios] = await Promise.all([
+            AdminUtils.api.get(`/admin/relatorio/faturamento?data_inicio=${inicio}&data_fim=${fim}`),
+            AdminUtils.api.get(`/admin/relatorio/horarios-pico?data_inicio=${inicio}&data_fim=${fim}`)
+        ]);
+
+        renderizarResumo(faturamento);
+        renderizarGraficos(faturamento, horarios);
+        renderizarTabelas(faturamento);
+
+        // Mostrar seções
+        document.getElementById('rel-resumo').style.display = 'flex';
+        document.getElementById('rel-graficos').style.display = 'flex';
+        document.getElementById('rel-graficos2').style.display = 'flex';
+        document.getElementById('rel-tabelas').style.display = 'flex';
+    } catch (error) {
+        console.error('Erro ao gerar relatório:', error);
+        AdminUtils.showToast('Erro ao gerar relatório', 'danger');
+    }
+}
+
+function renderizarResumo(data) {
+    // Calcular totais
+    let totalAgendamentos = 0;
+    let faturamentoTotal = 0;
+    let clientesSet = new Set();
+
+    data.por_dia.forEach(d => {
+        totalAgendamentos += d.quantidade;
+        faturamentoTotal += d.total;
+    });
+
+    // Ticket médio
+    const ticketMedio = totalAgendamentos > 0 ? faturamentoTotal / totalAgendamentos : 0;
+
+    document.getElementById('rel-total-agendamentos').textContent = totalAgendamentos;
+    document.getElementById('rel-faturamento-total').textContent = AdminUtils.formatarMoeda(faturamentoTotal);
+    document.getElementById('rel-ticket-medio').textContent = AdminUtils.formatarMoeda(ticketMedio);
+    document.getElementById('rel-clientes-atendidos').textContent = data.clientes_atendidos ?? 0;
+}
+
+function renderizarGraficos(faturamento, horarios) {
+    // Destruir gráficos anteriores
+    [chartDia, chartServico, chartPico].forEach(c => c?.destroy());
+
+    // Gráfico faturamento por dia
+    const ctxDia = document.getElementById('chart-faturamento-dia').getContext('2d');
+    chartDia = new Chart(ctxDia, {
+        type: 'bar',
+        data: {
+            labels: faturamento.por_dia.map(d => new Date(d.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })),
+            datasets: [{
+                label: 'Faturamento (R$)',
+                data: faturamento.por_dia.map(d => d.total),
+                backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                borderColor: '#ffc107',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+        }
+    });
+
+    // Gráfico por serviço
+    const ctxServico = document.getElementById('chart-faturamento-servico').getContext('2d');
+    chartServico = new Chart(ctxServico, {
+        type: 'doughnut',
+        data: {
+            labels: faturamento.por_servico.map(s => s.servico),
+            datasets: [{
+                data: faturamento.por_servico.map(s => s.total),
+                backgroundColor: ['#ffc107', '#198754', '#0d6efd', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#6c757d'],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { padding: 15 } } }
+        }
+    });
+
+    // Gráfico horários de pico
+    const ctxPico = document.getElementById('chart-horarios-pico').getContext('2d');
+    chartPico = new Chart(ctxPico, {
+        type: 'line',
+        data: {
+            labels: horarios.horarios.map(h => h.hora),
+            datasets: [{
+                label: 'Agendamentos',
+                data: horarios.horarios.map(h => h.agendamentos),
+                borderColor: '#ffc107',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#ffc107',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+}
+
+function renderizarTabelas(data) {
+    // Por serviço
+    const tbodyServico = document.querySelector('#tabela-servico-rel tbody');
+    tbodyServico.innerHTML = data.por_servico.map(s => `
+        <tr>
+            <td>${s.servico}</td>
+            <td class="text-center">${s.quantidade}</td>
+            <td class="text-end fw-bold text-warning">${AdminUtils.formatarMoeda(s.total)}</td>
+        </tr>
+    `).join('');
+
+
+}
+</script>
+{% endblock %}

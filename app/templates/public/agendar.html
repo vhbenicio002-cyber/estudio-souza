@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar Horário - Estúdio Souza{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light beauty-public-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-stars me-2"></i>Estúdio Souza
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/">Início</a>
+            <a class="nav-link" href="/fidelidade">Meus Pontos</a>
+            <a class="nav-link" href="/meus-agendamentos">Meus Agendamentos</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Progress Steps -->
+            <div class="row mb-5" id="progress-steps">
+                <div class="col-4 text-center">
+                    <div class="step-circle active" id="step1-circle">1</div>
+                    <small class="text-muted">Serviço</small>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="step-circle" id="step2-circle">2</div>
+                    <small class="text-muted">Data/Hora</small>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="step-circle" id="step3-circle">3</div>
+                    <small class="text-muted">Dados</small>
+                </div>
+            </div>
+
+            <!-- Step 1: Serviço -->
+            <div class="card shadow-sm mb-4 step-content active" id="step1">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-stars text-primary me-2"></i>Escolha o Serviço</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3" id="servicos-list">
+                        <!-- Carregado via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Data/Hora -->
+            <div class="card shadow-sm mb-4 step-content" id="step2">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar text-primary me-2"></i>Escolha Data e Horário</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <label class="col-sm-2 col-form-label">Data</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="data-agendamento" min="">
+                        </div>
+                    </div>
+
+                    <div id="horarios-container">
+                        <p class="text-muted text-center py-4">Selecione uma data para ver horários disponíveis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Dados -->
+            <div class="card shadow-sm mb-4 step-content" id="step3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-person text-primary me-2"></i>Seus Dados</h5>
+                </div>
+                <div class="card-body">
+                    <form id="form-agendamento">
+                        <input type="hidden" id="servico-id" name="servico_id">
+                        <input type="hidden" id="data-hora" name="data_hora">
+
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Nome</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="nome" name="nome" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Telefone</label>
+                            <div class="col-sm-10">
+                                <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-10">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="seu@email.com">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-2 col-form-label">Observações</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" id="observacoes" name="observacoes" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="voltarPasso(2)">
+                                <i class="bi bi-arrow-left me-1"></i>Voltar
+                            </button>
+                            <button type="submit" class="btn btn-warning fw-bold px-5" id="btn-finalizar">
+                                <i class="bi bi-check-circle me-1"></i>Confirmar Agendamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumo do Agendamento -->
+            <div class="card shadow-sm mb-4 d-none" id="resumo-card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-receipt text-dark me-2"></i>Resumo do Agendamento</h5>
+                </div>
+                <div class="card-body" id="resumo-content">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="modalSucesso" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2"></i>Solicitação Recebida!</h5>
+            </div>
+            <div class="modal-body text-center" id="modal-sucesso-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='/'">Voltar ao Início</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-weight: bold;
+    border: 3px solid #e9ecef;
+    transition: all 0.3s;
+}
+.step-circle.active {
+    background: #ffc107;
+    color: #000;
+    border-color: #ffc107;
+}
+.step-circle.completed {
+    background: #198754;
+    color: #fff;
+    border-color: #198754;
+}
+.step-content { display: none; }
+.step-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.servico-card {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.servico-card:hover, .servico-card.selected {
+    border-color: #ffc107;
+    background: #fffdf5;
+    box-shadow: 0 4px 12px rgba(255,193,7,0.15);
+}
+.servico-card.selected { border-color: #ffc107; }
+
+.horario-btn {
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s;
+    min-width: 90px;
+}
+.horario-btn:hover:not(:disabled) {
+    border-color: #ffc107;
+    background: #fffdf5;
+}
+.horario-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.horario-btn.selected {
+    border-color: #ffc107;
+    background: #ffc107;
+    color: #000;
+    font-weight: bold;
+}
+
+.card { border-radius: 16px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.card-header { border-radius: 16px 16px 0 0 !important; border-bottom: 1px solid #eee; }
+.form-control, .form-select { border-radius: 8px; border: 1px solid #ddd; }
+.form-control:focus, .form-select:focus { border-color: #ffc107; box-shadow: 0 0 0 3px rgba(255,193,7,0.15); }
+.btn-warning { background: #ffc107; border-color: #ffc107; color: #000; }
+.btn-warning:hover { background: #e0a800; border-color: #e0a800; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let servicoSelecionado = null;
+let horarioSelecionado = null;
+let servicos = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Permitir agendamento para hoje; a API remove horários que já passaram.
+    const agora = new Date();
+    const dataMinima = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+    document.getElementById('data-agendamento').min = dataMinima;
+
+    // Carregar catálogo de serviços do espaço
+    carregarServicos();
+
+    // Event listeners
+    document.getElementById('data-agendamento').addEventListener('change', carregarHorarios);
+    document.getElementById('form-agendamento').addEventListener('submit', confirmarAgendamento);
+
+    // Formatar telefone
+    document.getElementById('telefone').addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length <= 11) {
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        e.target.value = v;
+    });
+});
+
+async function carregarServicos() {
+    try {
+        const resp = await axios.get('/publico/servicos');
+        servicos = resp.data;
+        const container = document.getElementById('servicos-list');
+        container.innerHTML = '';
+
+        servicos.forEach(s => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4';
+            col.innerHTML = `
+                <div class="servico-card" data-id="${s.id}" onclick="selecionarServico(${s.id}, this)">
+                    <i class="bi bi-stars fs-1 text-primary mb-2"></i>
+                    <h6 class="fw-bold">${s.nome}</h6>
+                    <p class="text-muted small mb-1">${s.descricao || ''}</p>
+                    <div class="d-flex justify-content-center gap-3 text-muted small">
+                        <span>R$ ${s.preco.toFixed(2).replace('.', ',')}</span>
+                        <span><i class="bi bi-clock me-1"></i>${s.duracao_minutos} min</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar serviços:', error);
+        alert('Erro ao carregar serviços. Tente novamente.');
+    }
+}
+
+function selecionarServico(id, element) {
+    servicoSelecionado = servicos.find(s => s.id === id);
+    document.querySelectorAll('.servico-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    proximoPasso(2);
+}
+
+async function carregarHorarios() {
+    const data = document.getElementById('data-agendamento').value;
+    if (!data || !servicoSelecionado) return;
+
+    const container = document.getElementById('horarios-container');
+    container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Carregando horários...</p></div>';
+
+    try {
+        const params = new URLSearchParams({ data, servico_id: servicoSelecionado.id });
+
+        const resp = await axios.get(`/publico/slots?${params.toString()}`);
+        const slots = resp.data;
+
+        if (slots.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center py-4">Nenhum horário disponível para esta data</p>';
+            return;
+        }
+
+        let html = '<p class="small text-muted mb-2">Horários disponíveis para atendimento:</p><div class="d-flex flex-wrap gap-2">';
+        slots.forEach(s => {
+            const hora = new Date(s.horario).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            html += `<button type="button" class="horario-btn" ${!s.disponivel ? 'disabled' : ''} onclick="selecionarHorario(this, '${s.horario}')">${hora}</button>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Erro ao carregar horários:', error);
+        container.innerHTML = '<p class="text-danger text-center py-4">Erro ao carregar horários. Tente novamente.</p>';
+    }
+}
+
+function selecionarHorario(btn, horario) {
+    document.querySelectorAll('.horario-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    horarioSelecionado = horario;
+    proximoPasso(3);
+}
+
+function proximoPasso(passo) {
+    document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step${passo}`).classList.add('active');
+
+    // Atualizar circles
+    for (let i = 1; i <= 3; i++) {
+        const circle = document.getElementById(`step${i}-circle`);
+        circle.classList.remove('active', 'completed');
+        if (i < passo) circle.classList.add('completed');
+        else if (i === passo) circle.classList.add('active');
+    }
+
+    if (passo === 3) atualizarResumo();
+}
+
+function voltarPasso(passo) {
+    proximoPasso(passo);
+}
+
+function atualizarResumo() {
+    const data = new Date(horarioSelecionado);
+    const dataFormatada = data.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+    const horaFormatada = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById('servico-id').value = servicoSelecionado.id;
+    document.getElementById('data-hora').value = horarioSelecionado;
+
+    const resumoHtml = `
+        <div class="row g-3">
+            <div class="col-6"><strong>Serviço:</strong><br>${servicoSelecionado.nome}</div>
+            <div class="col-6"><strong>Preço:</strong><br>R$ ${servicoSelecionado.preco.toFixed(2).replace('.', ',')}</div>
+            <div class="col-6"><strong>Data:</strong><br>${dataFormatada}</div>
+            <div class="col-6"><strong>Horário:</strong><br>${horaFormatada}</div>
+            <div class="col-6"><strong>Duração:</strong><br>${servicoSelecionado.duracao_minutos} minutos</div>
+        </div>
+    `;
+    document.getElementById('resumo-content').innerHTML = resumoHtml;
+    document.getElementById('resumo-card').classList.remove('d-none');
+}
+
+async function confirmarAgendamento(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('btn-finalizar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Confirmando...';
+
+    const formData = new FormData(e.target);
+    const data = {
+        nome: formData.get('nome'),
+        telefone: formData.get('telefone'),
+        email: formData.get('email') || null,
+        servico_id: parseInt(formData.get('servico_id')),
+        data_hora: formData.get('data_hora'),
+        observacoes: formData.get('observacoes') || null,
+    };
+
+    try {
+        const resp = await axios.post('/publico/agendar', data);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Confirmar Agendamento';
+
+        // Mostrar modal de sucesso
+        document.getElementById('modal-sucesso-body').innerHTML = `
+            <div class="text-success mb-3"><i class="bi bi-check-circle-fill fs-1"></i></div>
+            <h5>Sua solicitação foi recebida!</h5>
+            <p class="text-muted">Seu horário aguarda confirmação da profissional. O envio de mensagem pelo WhatsApp depende da disponibilidade do serviço.</p>
+            <div class="card bg-light mt-3">
+                <div class="card-body">
+                    <p class="mb-1"><strong>${servicoSelecionado.nome}</strong></p>
+                    <p class="mb-0 text-muted small">${new Date(data.data_hora).toLocaleString('pt-BR')}</p>
+                </div>
+            </div>
+        `;
+        new bootstrap.Modal(document.getElementById('modalSucesso')).show();
+    } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Confirmar Agendamento';
+        const msg = error.response?.data?.detail || 'Erro ao confirmar agendamento. Tente novamente.';
+        alert(msg);
+    }
+}
+</script>
+{% endblock %}
