@@ -350,3 +350,76 @@ textarea.form-control { min-height: 100px; }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Ajustes finais das logos oficiais */
+.navbar .brand-logo {
+  width: 150px !important;
+  height: 42px !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+}
+
+.hero-section .hero-logo {
+  width: 108px !important;
+  height: 108px !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.hero-section {
+  background:
+    radial-gradient(ellipse at 85% 15%, rgba(166,109,79,.13), transparent 36%),
+    linear-gradient(135deg, #F8F3ED 0%, #F2E9DF 58%, #EAD9CB 100%) !important;
+  color: #282321 !important;
+}
+
+.hero-section .hero-kicker {
+  color: #A66D4F !important;
+}
+
+
+/* Cabeçalho centralizado da página inicial */
+.home-public-nav {
+  position: relative !important;
+  inset: auto !important;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 !important;
+}
+
+.home-public-nav .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-public-nav .navbar-brand {
+  margin: 0 auto !important;
+  padding: 0;
+}
+
+.home-public-nav .brand-logo {
+  display: block;
+  width: min(240px, 72vw) !important;
+  height: auto !important;
+  max-height: 76px;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+}
+
+.home-public-nav .navbar-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 auto !important;
+  gap: 8px;
+}
