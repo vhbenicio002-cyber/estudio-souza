@@ -135,15 +135,37 @@ class NotificacaoService:
         finally:
             db.close()
 
-    async def enviar_confirmacao_agendamento(self, agendamento: Agendamento):
-        """Envia confirmação de agendamento"""
-        cliente = agendamento.cliente
-        servico = agendamento.servico
-        await self.whatsapp.enviar_confirmacao_agendamento(
-            cliente_nome=cliente.nome,
-            telefone=cliente.telefone,
-            data_hora=agendamento.data_hora.strftime("%d/%m/%Y às %H:%M"),
-            servico=servico.nome,
+    async def enviar_solicitacao_agendamento(
+        self, cliente_nome: str, telefone: str, data_hora: str, servico: str
+    ):
+        """Encaminha ao WhatsApp a solicitação de agendamento."""
+        return await self.whatsapp.enviar_solicitacao_agendamento(
+            cliente_nome=cliente_nome,
+            telefone=telefone,
+            data_hora=data_hora,
+            servico=servico,
+        )
+
+    async def enviar_confirmacao_agendamento(
+        self, agendamento: Agendamento = None, *,
+        cliente_nome: str = None, telefone: str = None,
+        data_hora: str = None, servico: str = None
+    ):
+        """Envia confirmação aceitando objeto Agendamento ou dados separados."""
+        if agendamento is not None:
+            cliente_nome = agendamento.cliente.nome
+            telefone = agendamento.cliente.telefone
+            data_hora = agendamento.data_hora.strftime("%d/%m/%Y às %H:%M")
+            servico = agendamento.servico.nome
+
+        if any(v is None for v in (cliente_nome, telefone, data_hora, servico)):
+            raise ValueError("Dados incompletos para confirmar o agendamento")
+
+        return await self.whatsapp.enviar_confirmacao_agendamento(
+            cliente_nome=cliente_nome,
+            telefone=telefone,
+            data_hora=data_hora,
+            servico=servico,
         )
 
     async def enviar_cancelamento_agendamento(self, agendamento: Agendamento):
@@ -151,7 +173,7 @@ class NotificacaoService:
         cliente = agendamento.cliente
         servico = agendamento.servico
 
-        await self.whatsapp.enviar_cancelamento_agendamento(
+        return await self.whatsapp.enviar_cancelamento_agendamento(
             cliente_nome=cliente.nome,
             telefone=cliente.telefone,
             data_hora=agendamento.data_hora.strftime("%d/%m/%Y às %H:%M"),
